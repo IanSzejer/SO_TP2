@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "stdinout.h": "c",
+        "naiveconsole.h": "c",
+        "keyboard.h": "c",
+        "lib.h": "c",
+        "sudoku.h": "c",
+        "clock.h": "c",
+        "time.h": "c",
+        "stdint.h": "c",
+        "idtloader.h": "c",
+        "videod.h": "c",
+        "moduleloader.h": "c",
+        "chardefs.h": "c",
+        "stopwatch.h": "c"
+    }
+}
