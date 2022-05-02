@@ -119,4 +119,30 @@ void getRegs(char ** buf) {
         }
 }
 
+int numToStr(int num, char * str) {
+    if (num == 0) {
+        str[0] = '0';
+        return 1;
+    }
+	int neg=0;
+	if (num<0) {
+		str[0]='-';
+		str++;
+		num=num*(-1);
+		neg=1;
+	}	
+	int i, rem, n, len = 0;
+	n = num;
+	while (n != 0) {
+	  len++;
+	  n /= 10;
+	}
+	for (i = 0; i < len; i++) {
+	  rem = num % 10;
+	  num = num / 10;
+	  str[len - (i + 1)] = rem + '0';
+	}
+	return len+neg;
+}
+
 

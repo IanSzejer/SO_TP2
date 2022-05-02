@@ -12,6 +12,7 @@
         "videod.h": "c",
         "moduleloader.h": "c",
         "chardefs.h": "c",
-        "stopwatch.h": "c"
+        "stopwatch.h": "c",
+        "portable.h": "c"
     }
 }

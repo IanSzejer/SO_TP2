@@ -4,11 +4,14 @@
 #include <videoD.h>
 #include <keyboard.h>
 #include <lib.h>
+#include "memoryDriver.h"
+#include "videoColors.h"
 
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
 #define RED 4
+
 
 extern void infoReg(char ** buf);
 
@@ -26,7 +29,7 @@ static void getDate(char * buf);
 
 
 
-static SysCallR sysCalls[255] = {(SysCallR) &read, (SysCallR) &write, (SysCallR) &clear, (SysCallR) &splitScreen, (SysCallR) &changeScreen, (SysCallR)&getChar,(SysCallR)&ncClearLine,(SysCallR)&getTime, (SysCallR)&timerTick, (SysCallR)&set_kb_target, (SysCallR)&getDate, (SysCallR) &getRegs}; 
+static SysCallR sysCalls[255] = {(SysCallR) &read, (SysCallR) &write, (SysCallR) &clear, (SysCallR) &splitScreen, (SysCallR) &changeScreen, (SysCallR)&getChar,(SysCallR)&ncClearLine,(SysCallR)&getTime, (SysCallR)&timerTick, (SysCallR)&set_kb_target, (SysCallR)&getDate, (SysCallR) &getRegs,(SysCallR) &malloc,(SysCallR) &free,(SysCallR) &memState}; 
 
 uint64_t sysCallDispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_t rax) {
     SysCallR sysCall = sysCalls[rax]; // sysCalls es un arreglo de punteros a funcion, me guardo la funcion que corresponde con el valor de rax
@@ -165,7 +168,16 @@ static void getDate(char * buf) {
     buf[8] = 0;
 }
 
+static void *malloc(size_t size){
+    return mallocFun(size);
+}
 
+static void free(void *ptr){
+    freeFun(ptr);
+}
 
-
-
+static void memState(){
+    char buf[MAX_STR_LENGTH];
+    consult(buf);
+    write(STDOUT,buf,MAX_STR_LENGTH,WHITE);
+}
