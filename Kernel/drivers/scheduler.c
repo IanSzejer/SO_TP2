@@ -163,17 +163,49 @@ struct processNode * removeProcess(struct proccesNode* process){
 }
 struct processList* removeRecursiveList(struct proccesList* list,struct proccesNode* process){
     struct processList* aux;
+    int deleted;
+    int ready;
     if (list==NULL)
     return NULL;
-    if(list->priority==node->priority){
+    if(list->priority==process->priority){
         if(list->size==1){
-            aux=list->next;
+            aux=list->nextList;
             free(list);
             return aux;
         }
-        removeRecursiveProcess(list->first)
+        if(process->pcb.status==READY)
+        ready++;
+        removeRecursiveProcess(list->first,process,&deleted);
+        if(deleted){
+        list->size--;
+        if(ready){
+            list->nReady--
+        }}
+        }
+    else if(list->priority>process->priority){
+        return list;
     }
+    list->nextList=removeRecursiveList(list->nextList,process);
+    return list;
+
 }
+struct processNode* removeRecursiveNode(struct proccesNode* node,struct proccesNode* node2,int* deleted){
+    struct processNode* aux;
+    if(node==NULL){
+        return NULL;
+    }
+    if(node->pcb.pid==node2->pcb.pid){
+        aux=node->next;
+        free(node);
+        *deleted++;
+        return aux;
+    }
+    else if(node->pcb.pid>node2->pcb.pid){
+        return node;
+    }
+    node->next=removeRecursiveNode(node->next,node2,deleted);
+}
+
 
 struct processNode *getProcess(uint64_t pid){
     if (currentProcess->pcb.pid == pid)

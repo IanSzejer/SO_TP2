@@ -162,6 +162,14 @@ getStack:
 	mov rax, rsp
 	ret
 
+GLOBAL _syscallHandler
+EXTERN syscallDispatcher
+_syscallHandler:
+    pushState
+	call sysCallDispatcher 
+	popState
+	iretq
+
 ; GLOBAL infoReg
 
 ; infoReg:

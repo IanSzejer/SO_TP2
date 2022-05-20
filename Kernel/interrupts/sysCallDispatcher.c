@@ -26,10 +26,38 @@ static int getChar(unsigned int ascii);
 static void getTime(char * buf);
 static long timerTick(void (*f)());
 static void getDate(char * buf);
+static void* malloc(size_t size);
+static void free(void *ptr);
+static void memState();
+static void createProcess();
+static void endProcess(void* ptr);
+static void killProcess(void* ptr);
+static void* getAllProcesses();
+static void nice(void* ptr);
+static void changeState(void*ptr,int status);
+static void changeProcesses();
+static void* createSemaphore();
+static void* openSemaphore(void* ptr);
+static void closeSemaphore(void*ptr);
+static void* getSemaphores();
+static void wait(void* semaphore);
+static void post(void* semaphore);
+static void* createPipe(void* pipeArray);
+static void*openPipe(void * ptr);
+static void writePipe(void* pipe,void* toWrite);
+static void* readPipe();
+static void* getPipes();
 
 
-
-static SysCallR sysCalls[255] = {(SysCallR) &read, (SysCallR) &write, (SysCallR) &clear, (SysCallR) &splitScreen, (SysCallR) &changeScreen, (SysCallR)&getChar,(SysCallR)&ncClearLine,(SysCallR)&getTime, (SysCallR)&timerTick, (SysCallR)&set_kb_target, (SysCallR)&getDate, (SysCallR) &getRegs,(SysCallR) &malloc,(SysCallR) &free,(SysCallR) &memState}; 
+static SysCallR sysCalls[255] = {(SysCallR) &read, (SysCallR) &write, (SysCallR) &clear, (SysCallR) &splitScreen, 
+(SysCallR) &changeScreen, (SysCallR)&getChar,(SysCallR)&ncClearLine,(SysCallR)&getTime, (SysCallR)&timerTick, 
+(SysCallR)&set_kb_target, (SysCallR)&getDate, (SysCallR) &getRegs,(SysCallR) &malloc,(SysCallR) &free,
+(SysCallR)&malloc, (SysCallR)&free, (SysCallR)&memState,(SysCallR)&createProcess
+,(SysCallR)&endProcess,(SysCallR)&killProcess,(SysCallR)&getAllProcesses,(SysCallR)&nice,
+ (SysCallR)&changeState,(SysCallR)&changeProcesses,(SysCallR)&createSemaphore,(SysCallR)&openSemaphore,
+ (SysCallR)&closeSemaphore,(SysCallR)&getSemaphores,
+ (SysCallR)&wait,(SysCallR)&post,(SysCallR)&createPipe,(SysCallR)&openPipe,
+ (SysCallR)&writePipe,(SysCallR) &readPipe,(SysCallR)&getPipes}; 
 
 uint64_t sysCallDispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_t rax) {
     SysCallR sysCall = sysCalls[rax]; // sysCalls es un arreglo de punteros a funcion, me guardo la funcion que corresponde con el valor de rax
@@ -37,6 +65,8 @@ uint64_t sysCallDispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rc
         return sysCall(rdi, rsi, rdx, rcx);
     return 0;
 }
+
+
 
 static void clear() {
     ncClear();
@@ -180,4 +210,71 @@ static void memState(){
     char buf[MAX_STR_LENGTH];
     consult(buf);
     write(STDOUT,buf,MAX_STR_LENGTH,WHITE);
+}
+
+static void createProcess(){
+
+}
+
+static void endProcess(void* ptr){
+
+}
+
+static void killProcess(void* ptr){
+
+}
+
+static void* getAllProcesses(){
+
+}
+
+static void nice(void* ptr){
+
+}
+static void changeState(void*ptr,int status){
+
+}
+
+static void changeProcesses(){
+
+}
+
+static void* createSemaphore(){
+
+}
+
+static void* openSemaphore(void* ptr){
+
+}
+static void closeSemaphore(void*ptr){
+
+}
+
+static void* getSemaphores(){
+
+}
+static void wait(void* semaphore){
+
+}
+
+static void post(void* semaphore){
+
+}
+
+static void* createPipe(void* pipeArray){
+
+}
+static void*openPipe(void * ptr){
+
+}
+
+static void writePipe(void* pipe,void* toWrite){
+
+}
+
+static void* readPipe(){
+
+}
+static void* getPipes(){
+
 }
