@@ -56,7 +56,7 @@ void initializeMem(void *baseAllocation, uint64_t bSize)
     addBucket(&buckets[bucketSize - 1], base, bucketSize - 1);
 }
 
-void *mallocFF(uint64_t size)
+void *mallocBuddy(uint64_t size)
 {
     if (size == 0)
         return NULL;
@@ -81,7 +81,7 @@ void *mallocFF(uint64_t size)
     return (void *)++node;
 }
 
-void freeFF(void *ap)
+void freeBuddy(void *ap)
 {
     if (ap == NULL) // || (uint64_t)ap % HEADER_SIZE
         return;
@@ -135,7 +135,6 @@ static uint64_t log2(uint64_t n)
     return logValue;
 }
 
-// source: https://www.geeksforgeeks.org/program-to-find-whether-a-no-is-power-of-two/
 static uint64_t isPowerOfTwo(int n)
 {
     if (n == 0)
