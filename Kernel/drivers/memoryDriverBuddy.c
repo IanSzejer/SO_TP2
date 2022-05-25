@@ -1,7 +1,12 @@
 #ifndef BUDDY
 
 #include "../include/lib.h"
+#include <memory.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <unistd.h>
 
+#define HEADER_SIZE 8
 #define MIN_ALLOC_LOG2 6                     // 64 bytes
 #define MAX_ALLOC_LOG2 (30 - MIN_ALLOC_LOG2) // 1Gb max alloc
 #define BIN_POW(x) (1 << (x))
@@ -178,4 +183,43 @@ static list_t *getAdress(list_t *node)
     return (list_t *)((uint64_t)base + newOffset);
 }
 
+
+// List methods
+void listInit(list_t *list)
+{
+    list->prev = list;
+    list->next = list;
+    list->occupied = 1;
+}
+
+void listPush(list_t *list, list_t *entry)
+{
+    list_t *prev = list->prev;
+    entry->prev = prev;
+    entry->next = list;
+    prev->next = entry;
+    list->prev = entry;
+}
+
+void listRemove(list_t *entry)
+{
+    list_t *prev = entry->prev;
+    list_t *next = entry->next;
+    prev->next = next;
+    next->prev = prev;
+}
+
+list_t *listPop(list_t *list)
+{
+    list_t *back = list->prev;
+    if (back == list)
+        return NULL;
+    listRemove(back);
+    return back;
+}
+
+int isEmpty(list_t *list)
+{
+    return list->prev==list;
+}
 #endif
