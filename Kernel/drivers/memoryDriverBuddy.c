@@ -1,15 +1,14 @@
-#ifndef BUDDY
-
-#include "../include/lib.h"
-#include <memory.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include "memoryDriverBuddy.h"
 
 #define HEADER_SIZE 8
 #define MIN_ALLOC_LOG2 6                     // 64 bytes
 #define MAX_ALLOC_LOG2 (30 - MIN_ALLOC_LOG2) // 1Gb max alloc
 #define BIN_POW(x) (1 << (x))
+#define INITIAL_POSITION 0x1000000
+#define MAX_POSITION 10000
+
+
+
 
 typedef struct list_t
 {
@@ -20,7 +19,7 @@ typedef struct list_t
 
 static list_t buckets[MAX_ALLOC_LOG2];
 static int bucketSize;
-static list_t *base;
+static list_t *base=NULL;
 static int baseSize;
 static int availableMem;
 
@@ -31,15 +30,17 @@ static list_t *getBuddy(list_t *node);
 static uint64_t log2(uint64_t n);
 static uint64_t isPowerOfTwo(int n);
 static list_t *getAdress(list_t *node);
+static int copyAnswer(char* phrase, long memoryNum, char* buf);
+static list_t *listPop(list_t *list);
+static void listInit(list_t *list);
+static void listRemove(list_t *entry);
+static void listPush(list_t *list, list_t *entry);
+static int isEmpty(list_t *list);
 
-void initializeMem(void *baseAllocation, uint64_t bSize)
+static void initializeMem()
 {
-    if (baseAllocation == NULL)
-    {
-        return;
-    }
-    base = (list_t *)baseAllocation;
-    baseSize = bSize;
+    base = (list_t *)INITIAL_POSITION;
+    baseSize = MAX_POSITION;
     availableMem = baseSize;
     bucketSize = (int)log2(baseSize) - MIN_ALLOC_LOG2 + 1;
 
@@ -56,8 +57,10 @@ void initializeMem(void *baseAllocation, uint64_t bSize)
     addBucket(&buckets[bucketSize - 1], base, bucketSize - 1);
 }
 
-void *mallocBuddy(uint64_t size)
+void *mallocFun(uint64_t size)
 {
+    if(base==NULL)
+        initializeMem();
     if (size == 0)
         return NULL;
     uint64_t totalSize;
@@ -81,7 +84,7 @@ void *mallocBuddy(uint64_t size)
     return (void *)++node;
 }
 
-void freeBuddy(void *ap)
+void freeFun(void *ap)
 {
     if (ap == NULL) // || (uint64_t)ap % HEADER_SIZE
         return;
@@ -100,17 +103,22 @@ void freeBuddy(void *ap)
     listPush(&buckets[list->bucketLevel], list);
 }
 
-void mem()
+void consult(char* buf)
 {
-    print("Total Memory: ");
-    printInt(baseSize);
-    print("\n");
-    print("Available Memory: ");
-    printInt(availableMem);
-    print("\n");
-    print("Used Memory: ");
-    printInt(baseSize - availableMem);
-    print("\n");
+    buf+=copyAnswer("Total Memory: ",baseSize,buf);
+    buf+=copyAnswer("Available Memory: ",availableMem,buf);
+    buf+=copyAnswer("Used Memory: ",baseSize - availableMem,buf);
+    *(buf++) = '\0';
+}
+
+static int copyAnswer(char* phrase, long memoryNum, char* buf) {
+    int c = 0;
+    while (*phrase != '\0') {
+        *(buf++) = *(phrase++);
+        c++;
+    }
+    c += numToStr(memoryNum, buf);
+    return c;
 }
 
 static void addBucket(list_t *list, list_t *entry, uint64_t level)
@@ -184,14 +192,14 @@ static list_t *getAdress(list_t *node)
 
 
 // List methods
-void listInit(list_t *list)
+static void listInit(list_t *list)
 {
     list->prev = list;
     list->next = list;
     list->occupied = 1;
 }
 
-void listPush(list_t *list, list_t *entry)
+static void listPush(list_t *list, list_t *entry)
 {
     list_t *prev = list->prev;
     entry->prev = prev;
@@ -200,7 +208,7 @@ void listPush(list_t *list, list_t *entry)
     list->prev = entry;
 }
 
-void listRemove(list_t *entry)
+static void listRemove(list_t *entry)
 {
     list_t *prev = entry->prev;
     list_t *next = entry->next;
@@ -208,7 +216,7 @@ void listRemove(list_t *entry)
     next->prev = prev;
 }
 
-list_t *listPop(list_t *list)
+static list_t *listPop(list_t *list)
 {
     list_t *back = list->prev;
     if (back == list)
@@ -217,8 +225,7 @@ list_t *listPop(list_t *list)
     return back;
 }
 
-int isEmpty(list_t *list)
+static int isEmpty(list_t *list)
 {
     return list->prev==list;
 }
-#endif
