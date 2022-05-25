@@ -1,7 +1,12 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
+#define FD_AMOUNT_PER_PROCESS 10
+#define STDINT 0
+#define STDOUT 1
+#define STDERR 2
+int tickCount;
 
-int tickCount typedef struct
+typedef struct stackframe
 {
     // Registers restore context
     uint64_t rax;
@@ -43,6 +48,12 @@ typedef enum
     KILLED
 } states;
 
+typedef struct fileDescriptors
+{
+    uint64_t fd;
+    uint64_t reference;
+}FileDescriptorsTable;
+
 typedef struct pcb_t
 {
     char name[MAX_NAME];
@@ -54,8 +65,7 @@ typedef struct pcb_t
     uint64_t tickets;
     states state;
     context context; // 1 -> FOREGROUND, 0 -> BACKGROUND
-    uint64_t fdIn;
-    uint64_t fdOut;
+    FileDescriptorsTable fd[FD_AMOUNT_PER_PROCESS]={0};            //Maximo 10 fd 
 } pcb_t;
 
 typedef struct processNode
@@ -75,7 +85,7 @@ typedef struct processList
     uint32_t nReady;
 } ProcessList;
 
-
+void addPipe(uint64_t fd[2],uint64_t pid,uint64_t pipeRef,uint64_t pipeWriteRef);
 void initializeScheduler(char *argv[]);
 void createProcess(void *(*funcion)(void *), void *argv, int argc);
 ProcessList *createList(ProcessNode *nodeToAdd, uint64_t priority);
@@ -88,4 +98,6 @@ void *createContext(void *stack, uint16_t *arguments, void *(*funcion)(void *), 
 void tickInterrupt();
 void changePriority(ProcessNode *current, uint64_t newPriority);
 ProcessNode *listAllProcess();
+static void initiateFd(ProcessNode* newProcess)
+void *createContext(void *stack, uint16_t *arguments, void *(*funcion)(void *), int argc);
 #endif

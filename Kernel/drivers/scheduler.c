@@ -16,7 +16,6 @@ static ProcessNode *currentProcess;
 static ProcessNode *dummyProcess;
 static uint64_t pidCounter = 1;
 
-void *createContext(void *stack, uint16_t *arguments, void *(*funcion)(void *), int argc);
 
 // Cuando cree un proceso nuevo voy a querer q tenga otro pid
 static uint64_t getNewPid()
@@ -35,7 +34,7 @@ void initializeScheduler(char *argv[])
 void createProcess(void *(*funcion)(void *), void *argv, int argc)
 {
     uint64_t *arguments = mallocFun(3 * sizeof(uint16_t));
-    memcpy(arguments, argv, 3 * uint64_t);
+    memcpy(arguments, argv, 3 * sizeof(uint64_t));
     void *stack = mallocFun(PROCESS_SIZE);
     void *stackTopPtr = createContext(stack, arguments, funcion, argc);
 
@@ -45,6 +44,13 @@ void createProcess(void *(*funcion)(void *), void *argv, int argc)
     newProcess->pcb.fdIn = 0;
     newProcess->pcb.fdOut = 1;
     newProcess->pcb.state = stackTopPtr; // Aca se tiene que empezar a popear, no estoy seguro
+    newProcess->pcb.fd[0].fd=0;
+    newProcess->pcb.fd[0].reference=STDINT;
+    newProcess->pcb.fd[1].fd=1;
+    newProcess->pcb.fd[1].reference=STDOUT;
+    newProcess->pcb.fd[2].fd=2;
+    newProcess->pcb.fd[2].reference=STDERR;
+    initiateFd(newProcess);
     // faltan cosas del pcb pero queria verlo con ustedes
     addProcess(newProcess);
     // asignar prioridad
@@ -206,6 +212,13 @@ static ProcessNode *getRecursiveNextReady(ProcessNode *current)
     else
     {
         return firstList->first;
+    }
+}
+
+static void initiateFd(ProcessNode* newProcess){
+    for(int i=3; i<FD_AMOUNT_PER_PROCESS; i++){
+        newProcess->pcb.fd[i].fd=11;
+        newProcess->pcb.fd[i].reference=11;
     }
 }
 
@@ -371,4 +384,48 @@ ProcessNode *listAllProcess()
     }
 
     return toReturn;
+}
+
+
+ProcessNode* findNode(uint64_t pid){
+    ProcessList* currentList=firstList;
+    ProcessNode* currentNode;
+    while(currentList!=NULL){
+        currentNode=currentList->first;
+        while(currentNode!=NULL){
+            if (currentNode->pcb.pid==pid)
+                return currentNode;
+                currentNode=currentNode->next;
+        }
+        currentList=currentList->nextList;
+    }
+    return NULL;
+}
+
+
+void addPipe(uint64_t fd[2],uint64_t pid,uint64_t pipeReadRef,uint64_t pipeWriteRef){
+    ProcessNode* node= findNode();
+    if (node==NULL){
+        fd[0]=0;
+        fd[1]=0;
+        return;
+    }
+    int found=0;
+    for(int i=0; i<FD_AMOUNT_PER_PROCESS && found<2, i++){
+        if( node->pcb.fd[i].fd!=i){      //Si en posicion 4 no esta el fd 4 es xq no existe
+            node->pcb.fd[i].fd=i;
+            node->pcb.fd[i].reference=pipeReadRef;
+            fd[0]=i;
+            found++;        
+        }
+        if( node->pcb.fd[i].fd!=i){      //Si en posicion 4 no esta el fd 4 es xq no existe
+            node->pcb.fd[i].fd=i;
+            node->pcb.fd[i].reference=pipeWriteRef;
+            fd[1]=i;
+            found++;        
+        } 
+    }
+    //Si sale del for es que no hay 2 fd para asignar un pipe
+    fd[0]=0;
+    fd[1]=0; 
 }
