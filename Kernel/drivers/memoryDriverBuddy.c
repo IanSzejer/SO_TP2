@@ -1,4 +1,4 @@
-#include "memoryDriverBuddy.h"
+#include "memoryDriver.h"
 
 #define HEADER_SIZE 8
 #define MIN_ALLOC_LOG2 6                     // 64 bytes
@@ -57,7 +57,7 @@ static void initializeMem()
     addBucket(&buckets[bucketSize - 1], base, bucketSize - 1);
 }
 
-void *mallocFun(uint64_t size)
+void *mallocFun(uint64_t nbytes)
 {
     if(base==NULL)
         initializeMem();
@@ -84,7 +84,7 @@ void *mallocFun(uint64_t size)
     return (void *)++node;
 }
 
-void freeFun(void *ap)
+void freeFun(void *block)
 {
     if (ap == NULL) // || (uint64_t)ap % HEADER_SIZE
         return;

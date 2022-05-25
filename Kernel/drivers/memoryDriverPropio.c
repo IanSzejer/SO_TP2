@@ -1,5 +1,5 @@
 #include "../include/lib.h"
-
+#include "../include/memoryDriver.h"
 #define INITIAL_POSITION 0x1000000
 #define MAX_POSITION 10000
 
