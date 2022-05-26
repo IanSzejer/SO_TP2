@@ -1,7 +1,9 @@
 
 
 #include "shell.h"
-
+#include <scheduler.h>
+#include <memoryDriverPropio.h>
+#include <pipeManager.h>
 typedef struct
 {
     char line[SHELLW];
@@ -214,7 +216,69 @@ void setupShellCommands()
     loadCommand(&printmem, "printmem", "Prints 32 bytes of memory from arg. address");
     loadCommand(&divideByZero, "exception0", "Executes rutine that generates \"division by zero\" exception");
     loadCommand(&invalidOpCode, "exception6", "Executes rutine that generates \"invalid op. code\" exception");
+    loadCommand(&loop,"loop","prints a message with a delay inputed by user");
+    loadCommand(&cat,"cat", "prints what its received");
+    loadCommand(&wc,"wc", "counts the amount of lines inputed ");
+    loadCommand(&filter,"filter", "prints what its received,excluding vocals");
+    loadCommand(&philosophers,"philosophers","philosopher problem");
+    loadCommand(&mem,"mem","see memory status");
+    loadCommand(&kill,"kill","kill a process");
+    loadCommand(&nice,"nice","change a process priority");
+    loadCommand(&block,"block","block a process");
+    loadCommand(&pipe,"pipe","see pipes status");
+
 }
+
+void cat(){
+     char buffer[100];
+    while(scanf(buffer)>0)
+        print(buffer);
+    char buffer[100];
+    int count;
+    
+    while(scanf(buffer)>0)
+        count++;
+    char num[1];
+    num[0]=intToChar(count);
+    print(num);
+}
+
+void wc(){
+    char buffer[100];
+    int count;
+    
+    while(scanf(buffer)>0)
+        count++;
+    char num[1];
+    num[0]=intToChar(count);
+    print(num);
+}
+void filter(){
+    char buffer[100];
+    while(scanf(buffer)>0)
+    {
+        int i=0;
+        while(buffer[i]){
+            if (buffer[i]=='a'||buffer[i]=='e'||buffer[i]=='i'||buffer[i]=='o'||buffer[i]=='u'||buffer[i]=='A'||buffer[i]=='E'||buffer[i]=='I'||buffer[i]=='O'||buffer[i]=='U'){
+
+            }else{putChar(buffer[i]);
+            }
+        }
+    }
+}
+void loop(char seconds){
+    int sec;
+    if(charToDigit(seconds)>=0)
+    while(1){
+        print("hola soy ");
+        print(getPid);
+        print("\n");
+        sleep(sec);
+    }
+    else print("ERROR:No se inserto un numero");
+
+}
+
 
 void loadCommand(void (*f)(), char *name, char *desc)
 {

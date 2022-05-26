@@ -145,4 +145,23 @@ int numToStr(int num, char * str) {
 	return len+neg;
 }
 
+//Pasa int a hexa y lo guarda en buf
+int hexaToString(int n,char* buf){
+	int base=16;
+    int i = 12;
+    int j = 0;
+
+    do{
+        buf[i] = "0123456789ABCDEF"[n % base];
+        i--;
+        n = n/base;
+    }while( n > 0);
+
+
+    while( ++i < 13){
+       buf[j++] = buf[i];
+    }
+	return j;
+}
+
 

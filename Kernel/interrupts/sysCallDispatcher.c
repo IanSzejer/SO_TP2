@@ -6,6 +6,8 @@
 #include <lib.h>
 #include "memoryDriver.h"
 #include "videoColors.h"
+#include "scheduler.h"
+#include "pipeManager.h"
 
 #define STDIN 0
 #define STDOUT 1
@@ -28,13 +30,13 @@ static void getDate(char *buf);
 static void *malloc(size_t size);
 static void free(void *ptr);
 static void memState();
-static void createProcess();
+static void newProcess();
 static void endProcess(void *ptr);
 static void killProcess(void *ptr);
 static void *getAllProcesses();
 static void nice(void *ptr);
 static void changeState(void *ptr, int status);
-static void changeProcesses();
+static void changeProcesses(void *(*funcion)(void *), void *argv, int argc);
 static void *createSemaphore();
 static void *openSemaphore(void *ptr);
 static void closeSemaphore(void *ptr);
@@ -50,7 +52,7 @@ static void *getPipes();
 static SysCallR sysCalls[255] = {(SysCallR)&read, (SysCallR)&write, (SysCallR)&clear, (SysCallR)&splitScreen,
                                  (SysCallR)&changeScreen, (SysCallR)&getChar, (SysCallR)&ncClearLine, (SysCallR)&getTime, (SysCallR)&timerTick,
                                  (SysCallR)&set_kb_target, (SysCallR)&getDate, (SysCallR)&getRegs, (SysCallR)&malloc, (SysCallR)&free,
-                                 (SysCallR)&malloc, (SysCallR)&free, (SysCallR)&memState, (SysCallR)&createProcess, (SysCallR)&endProcess, (SysCallR)&killProcess, (SysCallR)&getAllProcesses, (SysCallR)&nice,
+                                 (SysCallR)&malloc, (SysCallR)&free, (SysCallR)&memState, (SysCallR)&newProcess, (SysCallR)&endProcess, (SysCallR)&killProcess, (SysCallR)&getAllProcesses, (SysCallR)&nice,
                                  (SysCallR)&changeState, (SysCallR)&changeProcesses, (SysCallR)&createSemaphore, (SysCallR)&openSemaphore,
                                  (SysCallR)&closeSemaphore, (SysCallR)&getSemaphores,
                                  (SysCallR)&wait, (SysCallR)&post, (SysCallR)&createPipe, (SysCallR)&openPipe,
@@ -232,24 +234,34 @@ static void memState()
     write(STDOUT, buf, MAX_STR_LENGTH, WHITE);
 }
 
-static void createProcess()
+static void newProcess(void *(*funcion)(void *), void *argv, int argc)
 {
+    createProcess(funcion,argv,argc);
 }
 
-static void endProcess(void *ptr)
+static void endProcess(uint64_t pid)
 {
+    removeProcess(pid);
 }
 
-static void killProcess(void *ptr)
+static void killProcess(uint64_t pid)
 {
+    removeProcess(pid);
 }
 
 static void *getAllProcesses()
 {
+    char buf[MAX_STR_LENGTH];
+    listAllProcess(buf);
+    write(STDOUT, buf, MAX_STR_LENGTH, WHITE);
 }
 
-static void nice(void *ptr)
+static int nice(uint64_t pid,uint64_t priority)
 {
+    if (priority>MAX_PRIO)
+        return -1;
+    changePriority(pid,priority);
+    return 1;
 }
 static void changeState(void *ptr, int status)
 {
