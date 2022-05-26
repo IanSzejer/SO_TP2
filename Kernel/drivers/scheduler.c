@@ -19,10 +19,12 @@ static uint64_t getNewPid() {
     return pidCounter++;
 }
 
-void initializeScheduler(char* argv[]) {
+uint64_t initializeScheduler(char* argv[]) {
     firstList = NULL;
     currentProcess = NULL;
-    run(hlt);
+    //crear dummyProcess
+    return dummyProcess->pcb.rsp;
+
 }
 // Como argumento recibe un puntero a funcion, como es un proceso no se que parametros recibe
 // Por ahora digo que devuelve void*, por decreto recibe hasta 3 argumentos de tamaño uint64_t
@@ -35,8 +37,6 @@ void createProcess(void* (*funcion)(void*), void* argv, int argc) {
     ProcessNode* newProcess = mallocFun(sizeof(ProcessNode));
     newProcess->priority = BASE_PRIORITY;
     newProcess->pcb.pid = getNewPid();
-    newProcess->pcb.fdIn = 0;
-    newProcess->pcb.fdOut = 1;
     newProcess->pcb.state = stackTopPtr; // Aca se tiene que empezar a popear, no estoy seguro
     newProcess->pcb.fd[0].fd = 0;
     newProcess->pcb.fd[0].reference = STDINT;
@@ -158,7 +158,9 @@ static ProcessNode* getNextReady() {
     // }else{
     //     currentProcess = currentProcess->next;
     // }
-    return currentProcess;
+    if (currentProcess==NULL)
+    return dummyProcess->pcb.rsp;
+    return currentProcess->pcb.rsp;
 }
 
 static ProcessNode* getRecursiveNextReady(ProcessNode* current) {
@@ -242,24 +244,24 @@ void* createContext(void* stack, uint16_t* arguments, void* (*funcion)(void*), i
     return &stackStruct->rax;
 }
 
-void tickInterrupt() {
+uint64_t tickInterrupt() {
     if (currentProcess != NULL) {
         tickCount++;
         if (tickCount > 9 - currentProcess->priority) {
-            getNextReady()
+            getNextReady();
         }
     }
 
     if (currentProcess == NULL) {
-        run(hlt);
+        return dummyProcess->pcb.rsp;
     } else
-        run(currentProcess)
+        return currentProcess->pcb.rsp
 }
 
 void changePriority(ProcessNode* current, uint64_t newPriority) {
-    firstList = change(firstList, current)
-                    current->priority = newPriority
-    addProcess(current)
+    firstList = change(firstList, current);
+    current->priority = newPriority;
+    addProcess(current);
 }
 
 static ProcessList* change(ProcessList* list, ProcessNode* process) {
@@ -305,16 +307,16 @@ static ProcessNode* changeProcess(ProcessNode* node, ProcessNode* node2, int* de
 }
 
 ProcessNode* listAllProcess() {
-    ProcessNode toReturn[MAX_SIZE] = NULL;
+    ProcessNode* toReturn[MAX_SIZE] = NULL;
     int i = 0;
     ProcessList* aux = firstList;
     while (aux != NULL) {
-        ProcessNode* nodeAux = aux->first while (nodeAux != NULL){
-            toReturn[i++] = nodeAux
+        ProcessNode* nodeAux = aux->first; while (nodeAux != NULL){
+            toReturn[i++] = nodeAux;
                 // Luego voy a tener q printear
                 // nombre, ID, prioridad, stack y base pointer, foreground y
                 // cualquier otra variable que consideren necesaria.
-                nodeAux = nodeAux->next} aux = aux->nextList
+                nodeAux = nodeAux->next;} aux = aux->nextList;
     }
 
     return toReturn;
@@ -343,7 +345,7 @@ void addPipe(uint64_t fd[2], uint64_t pid, uint64_t pipeReadRef, uint64_t pipeWr
         return;
     }
     int found = 0;
-    for (int i = 0; i < FD_AMOUNT_PER_PROCESS && found < 2, i++) {
+    for (int i = 0; i < FD_AMOUNT_PER_PROCESS && found < 2; i++) {
         if (node->pcb.fd[i].fd != i) { // Si en posicion 4 no esta el fd 4 es xq no existe
             node->pcb.fd[i].fd = i;
             node->pcb.fd[i].reference = pipeReadRef;

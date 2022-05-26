@@ -13,6 +13,7 @@
         "moduleloader.h": "c",
         "chardefs.h": "c",
         "stopwatch.h": "c",
-        "portable.h": "c"
+        "portable.h": "c",
+        "scheduler.h": "c"
     }
 }

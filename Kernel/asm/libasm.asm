@@ -170,6 +170,7 @@ _syscallHandler:
 	popState
 	iretq
 
+
 ; GLOBAL infoReg
 
 ; infoReg:

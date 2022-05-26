@@ -69,6 +69,7 @@ typedef struct pcb_t
     FileDescriptorsTable fd[FD_AMOUNT_PER_PROCESS];            //Maximo 10 fd 
 } pcb_t;
 
+
 typedef struct processNode
 {
     pcb_t pcb;
@@ -86,8 +87,12 @@ typedef struct processList
     uint32_t nReady;
 } ProcessList;
 
+typedef struct Schedule{
+    ProcessNode* fg;
+}Schedule;
+
 void addPipe(uint64_t fd[2],uint64_t pid,uint64_t pipeRef,uint64_t pipeWriteRef);
-void initializeScheduler(char *argv[]);
+uint64_t initializeScheduler(char *argv[]);
 void createProcess(void *(*funcion)(void *), void *argv, int argc);
 ProcessList *createList(ProcessNode *nodeToAdd, uint64_t priority);
 void checkReady(ProcessNode *node, ProcessList *list);
@@ -96,7 +101,7 @@ ProcessNode *removeProcess(ProcessNode *process);
 uint64_t unblock(uint64_t pid);
 uint64_t block(uint64_t pid);
 void *createContext(void *stack, uint16_t *arguments, void *(*funcion)(void *), int argc);
-void tickInterrupt();
+uint64_t tickInterrupt();
 void changePriority(ProcessNode *current, uint64_t newPriority);
 ProcessNode *listAllProcess();
 static void initiateFd(ProcessNode* newProcess);

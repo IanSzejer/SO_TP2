@@ -17,7 +17,7 @@ GLOBAL _exception00Handler
 GLOBAL _exception06Handler
 
 GLOBAL _sysCallHandlerMaster
-
+GLOBAL switchHandler
 EXTERN irqDispatcher
 EXTERN exceptionDispatcher
 
@@ -208,6 +208,8 @@ haltcpu:
 	cli
 	hlt
 	ret
+
+switchHandler
 
 SECTION .bss
 	aux resq 1
