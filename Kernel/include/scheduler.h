@@ -4,6 +4,7 @@
 #define STDINT 0
 #define STDOUT 1
 #define STDERR 2
+#define MAX_NAME 100
 int tickCount;
 
 typedef struct stackframe
@@ -65,7 +66,7 @@ typedef struct pcb_t
     uint64_t tickets;
     states state;
     context context; // 1 -> FOREGROUND, 0 -> BACKGROUND
-    FileDescriptorsTable fd[FD_AMOUNT_PER_PROCESS]={0};            //Maximo 10 fd 
+    FileDescriptorsTable fd[FD_AMOUNT_PER_PROCESS];            //Maximo 10 fd 
 } pcb_t;
 
 typedef struct processNode
@@ -98,6 +99,6 @@ void *createContext(void *stack, uint16_t *arguments, void *(*funcion)(void *), 
 void tickInterrupt();
 void changePriority(ProcessNode *current, uint64_t newPriority);
 ProcessNode *listAllProcess();
-static void initiateFd(ProcessNode* newProcess)
+static void initiateFd(ProcessNode* newProcess);
 void *createContext(void *stack, uint16_t *arguments, void *(*funcion)(void *), int argc);
 #endif
