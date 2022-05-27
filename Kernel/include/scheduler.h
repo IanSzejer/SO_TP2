@@ -83,15 +83,12 @@ typedef struct processList
 {
     ProcessNode *first;
     ProcessNode *last;
-    ProcessList *nextList;
+    struct processList *nextList;
     uint64_t priority;
     uint32_t size;
     uint32_t nReady;
-} ProcessList;
-
-typedef struct Schedule{
     ProcessNode* fg;
-}Schedule;
+} ProcessList;
 
 static char processInfo[]="PID      NAME        PRIORIDAD       STACK       BASE_POINTER    FOREGROUND";
 
@@ -112,5 +109,5 @@ ProcessNode *listAllProcess();
 static void initiateFd(ProcessNode* newProcess);
 void *createContext(void *stack, uint16_t *arguments, void *(*funcion)(void *), int argc);
 static int printInitial(char* buf);
-uint64_t getPid()
+uint64_t getPid();
 #endif

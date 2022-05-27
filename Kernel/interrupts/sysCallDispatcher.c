@@ -12,7 +12,7 @@
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
-#define RED 4
+
 
 extern void infoReg(char **buf);
 
@@ -39,10 +39,10 @@ static void changeState(void *ptr, int status);
 static void changeProcesses(void *(*funcion)(void *), void *argv, int argc);
 static void *createSemaphore();
 static void *openSemaphore(void *ptr);
-static void closeSemaphore(void *ptr);
+static uint64_t closeSemaphore(void *ptr);
 static void *getSemaphores();
-static void wait(void *semaphore);
-static void post(void *semaphore);
+static int wait(void *semaphore);
+static int post(void *semaphore);
 static void *createPipe(void *pipeArray);
 static void *openPipe(void *ptr);
 static void writePipe(void *pipe, void *toWrite);

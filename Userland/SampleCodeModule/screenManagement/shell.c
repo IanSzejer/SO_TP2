@@ -4,6 +4,8 @@
 #include <scheduler.h>
 #include <memoryDriverPropio.h>
 #include <pipeManager.h>
+#include <phylo.h>
+
 typedef struct
 {
     char line[SHELLW];
@@ -220,12 +222,13 @@ void setupShellCommands()
     loadCommand(&cat,"cat", "prints what its received");
     loadCommand(&wc,"wc", "counts the amount of lines inputed ");
     loadCommand(&filter,"filter", "prints what its received,excluding vocals");
-    loadCommand(&philosophers,"philosophers","philosopher problem");
-    loadCommand(&mem,"mem","see memory status");
-    loadCommand(&kill,"kill","kill a process");
-    loadCommand(&nice,"nice","change a process priority");
+    loadCommand(&phylo,"philosophers","philosopher problem");
+    loadCommand(&consult,"mem","see memory status");
+    loadCommand(&removeProcess,"kill","kill a process");
+    loadCommand(&changePriority,"nice","change a process priority");
     loadCommand(&block,"block","block a process");
-    loadCommand(&pipe,"pipe","see pipes status");
+    loadCommand(&listPipes,"pipe","see pipes status");
+    loadCommand(&listAllProcess,"ps","see processes status");
 
 }
 
@@ -268,10 +271,12 @@ void filter(){
 }
 void loop(char seconds){
     int sec;
+    char string[1];
+    string[0]=intToChar(getPid);
     if(charToDigit(seconds)>=0)
     while(1){
         print("hola soy ");
-        print(getPid);
+        print(string);
         print("\n");
         sleep(sec);
     }

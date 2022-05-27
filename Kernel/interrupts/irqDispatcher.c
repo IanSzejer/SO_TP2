@@ -23,7 +23,7 @@ void irqDispatcher(uint64_t irq, uint64_t rsp)
 void int_20()
 {
 	timer_handler();
-	tickInterrupt();
+	
 }
 
 void int_21(uint64_t *stack)
