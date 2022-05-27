@@ -12,7 +12,7 @@
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
-#define RED 4
+
 
 extern void infoReg(char **buf);
 
@@ -34,7 +34,7 @@ static void newProcess();
 static void endProcess(void *ptr);
 static void killProcess(void *ptr);
 static void *getAllProcesses();
-static void nice(void *ptr);
+static int nice(void *ptr);
 static void changeState(void *ptr, int status);
 static void changeProcesses(void *(*funcion)(void *), void *argv, int argc);
 static void *createSemaphore();

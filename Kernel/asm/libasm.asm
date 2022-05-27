@@ -7,10 +7,10 @@ GLOBAL getKbCode
 
 GLOBAL keyboardActivated
 
-
+EXTERN handler
 EXTERN updateRegs
 ; EXTERN updateRegsEx
-
+EXTERN sysCallDispatcher
 EXTERN getRegs
 
 section .text

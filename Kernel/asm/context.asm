@@ -45,7 +45,7 @@ _saveContext:
     and rsp,64
     push rsp
     pushState
-    mov eax,rsp
+    mov rax,rsp
 
 
 _getContext:
