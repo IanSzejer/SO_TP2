@@ -1,35 +1,10 @@
-#include "../include/pipeManager.h"
+#include "pipeManager.h"
 //#include "scheduler.h" INCLUIRLO CUANDO LO META CON EL RESTO DEL CODIGO
-#define INIT_BUFF_SIZE 1024
-#define FD_AMOUNT 256
-#define PIPE_AMOUNT 20
+
 
 typedef unsigned long long uint64_t;
 // Estructura que tendra un pipe
 
-typedef struct {
-    PipeUser* nextUser;
-    char* processBuffer;
-    int bufferSize;
-} PipeUser;
-
-typedef struct pipe {
-    char* buffer;
-    char* writePointer;
-    char* readPointer;
-    int bufferWriten;
-    int bufferSize;
-    uint64_t pipeId;
-    uint64_t pipeReadRef;
-    uint64_t pipeWriteRef;
-    PipeUser* firstWriteWaitingList;
-    PipeUser* lastWriteWaitingList;
-    PipeUser* firstReadWaitingList;
-    PipeUser* lastReadWaitingList;
-    Pipe* nextPipe;
-
-    int writen;
-} Pipe;
 
 static Pipe* pipeArray[PIPE_AMOUNT] = {0};
 static char pipePhrase1[] = "Pipe ID: ";
@@ -62,13 +37,13 @@ int pipeFun(int pipeFd[2], int processId) {
     if (!found)
         return -1;
     // Creo el pipe completo
-    newPipe->buffer = (char*)mallocFun(INIT_BUFF_SIZE);
-    if (newPipe->buffer == NULL)
+    newPipe->bufferInit = (char*)mallocFun(BUFF_SIZE);
+    if (newPipe->bufferInit == NULL)
         return -1;
+    newPipe->bufferEnd=newPipe->bufferInit+BUFF_SIZE;
     newPipe->bufferWriten = 0;
-    newPipe->bufferSize = INIT_BUFF_SIZE;
-    newPipe->readPointer = newPipe->buffer;
-    newPipe->writePointer = newPipe->buffer;
+    newPipe->readPointer = newPipe->bufferInit;
+    newPipe->writePointer = newPipe->bufferInit;
     newPipe->firstReadWaitingList = NULL;
     newPipe->firstWriteWaitingList = NULL;
     newPipe->lastReadWaitingList = NULL;
@@ -102,42 +77,28 @@ int writeInPipe(uint64_t writePipeId, uint64_t pid, int size, char* text) {
         return -1;
     }
     if (pipeArray[i]->writen == 1) {
-        addUser(i, size, text);
+        addWritingUser(i, size, text,pid);
     } else {
         // Como el array es circular, copio hasta el final, incremento el text y copio el resto
-        if (size > pipeArray[i]) {
-            memcpy(pipeArray[i]->writePointer, text, (pipeArray[i]->bufferSize - pipeArray[i]->bufferWriten) * sizeof(char));
-            int amountCopied = pipeArray[i]->bufferSize - pipeArray[i]->bufferWriten;
-            text += amountCopied;
-            pipeArray[i]->writePointer = pipeArray[i]->buffer; // Pongo el writer al principio del buffer de nuevo
-            pipeArray[i]->bufferWriten = 0;
-            // Copio el resto del tamaño
-            memcpy(pipeArray[i]->writePointer, text, (pipeArray[i]->bufferSize - amountCopied) * sizeof(char));
-            amountCopied = pipeArray[i]->bufferSize - amountCopied;
-            text += amountCopied;
-            pipeArray[i]->writePointer += amountCopied;
-            pipeArray[i]->bufferWriten = amountCopied;
-            pipeArray[i]->writen = 1;
-            size -= pipeArray[i]->bufferSize;
-            addUser(i, size, text);
+        writeInBuffer(pipeArray[i],pid,size,text);
+    }
+}
 
-        } else {
-            if (size < pipeArray[i]->bufferSize - pipeArray[i]->bufferWriten) {
-                memcpy(pipeArray[i]->writePointer, text, (size * sizeof(char)));
-                pipeArray[i]->writePointer += size;
-                pipeArray[i]->bufferWriten += size;
-            } else {
-                memcpy(pipeArray[i]->writePointer, text, (pipeArray[i]->bufferSize - pipeArray[i]->bufferWriten) * sizeof(char));
-                int amountCopied = pipeArray[i]->bufferSize - pipeArray[i]->bufferWriten;
-                text += amountCopied;
-                pipeArray[i]->writePointer = pipeArray[i]->buffer;
-                pipeArray[i]->bufferWriten = 0;
-                memcpy(pipeArray[i]->writePointer, text, (size - amountCopied) * sizeof(char)); // Copio de size, menos lo ya copiado
-                amountCopied = size - amountCopied;
-                pipeArray[i]->bufferWriten += amountCopied;
-                pipeArray[i]->writePointer += amountCopied;
-            }
-        }
+int readFromPipe(uint64_t readPipeId, uint64_t pid, int size, char* text){
+    int found = 0;
+    int i = 0;
+    for (; i < PIPE_AMOUNT && !found; i++) {
+        if (pipeArray[i] != NULL && pipeArray[i]->pipeId == readPipeId)
+            found = 1;
+    }
+    if (found == 0) {
+        return -1;
+    }
+    if (pipeArray[i]->bufferWriten == 0) {          //No hay nada escrito
+        addReadingUser(i, size, text,pid);
+    } else {
+        // Como el array es circular, copio hasta el final, incremento el text y copio el resto
+        readFromBuffer(pipeArray[i],pid,size,text);
     }
 }
 
@@ -151,13 +112,155 @@ void listPipes(char* buf) {
     *(buf++) = '\0';
 }
 
-void addUser(int index, int size, char* text) {
+static void readFromBuffer(Pipe* pipe,uint64_t pid,uint64_t size,char* text){
+    memcpy(text,pipe->readPointer, min(pipe->bufferEnd - pipe->readPointer,min(size,pipe->bufferWriten)));
+    uint64_t amountCopied =  min(pipe->bufferEnd - pipe->readPointer,min(size,pipe->bufferWriten));
+    text += amountCopied/(sizeof(char));    //Lo aumento el tamaño copiado en chars
+    size-=amountCopied;
+    pipe->bufferWriten-=amountCopied;
+    if(pipe->readPointer==pipe->bufferEnd ) //Debo volver al inicio del array si no esta lleno
+        pipe->readPointer=pipe->bufferInit;
+    else
+        pipe->readPointer+=amountCopied;
+    pipe->writen=0;
+    if(pipe->bufferWriten == 0){
+        if(size>0){
+            addReadingUser(pipe, size, text,pid);         //Lo pongo en la cola de espera
+            startWriting(pipe);
+            return;
+        }
+    }
+    if(size==0){
+        startWriting(pipe);    
+        return;
+    }
+
+    memcpy(text,pipe->readPointer, min(size,pipe->bufferWriten));
+    amountCopied =  min(size,pipe->bufferWriten);
+    size-=amountCopied;
+    pipe->bufferWriten-=amountCopied; 
+    pipe->readPointer += amountCopied;
+    if(size==0){
+        startWriting(pipe);    
+        return;
+    }
+    text += amountCopied/(sizeof(char));    //Lo aumento el tamaño copiado en chars
+    addreadingUser(pipe, size, text,pid);
+    startWriting(pipe);
+}
+
+static void startWriting(Pipe* pipe){
+    if(pipe->firstWriteWaitingList==NULL)
+        return;     
+    PipeUser* current=pipe->firstWriteWaitingList;
+    PipeUser* aux;
+    uint64_t pid;
+    while(current!=NULL){
+        pid=current->pid;
+        aux=current->nextUser;
+        freeFun(current);
+        current=aux;
+        unblock(pid);
+    }
+    pipe->firstWriteWaitingList=NULL;
+    pipe->lastWriteWaitingList=NULL;
+}
+
+
+static void startreading(Pipe* pipe){
+    if(pipe->firstReadWaitingList==NULL)
+        return;     
+    PipeUser* current=pipe->firstReadWaitingList;
+    PipeUser* aux;
+    uint64_t pid;
+    while(current!=NULL){
+        pid=current->pid;
+        aux=current->nextUser;
+        freeFun(current);
+        current=aux;
+        unblock(pid);
+    }
+    pipe->firstReadWaitingList=NULL;
+    pipe->lastReadWaitingList=NULL;
+
+}
+
+
+static void writeInBuffer(Pipe* pipe,uint64_t pid,uint64_t size,char* text){
+    
+    memcpy(pipe->writePointer, text, min(pipe->bufferEnd - pipe->writePointer,min(size,BUFF_SIZE-pipe->bufferWriten)));
+    uint64_t amountCopied =  min(pipe->bufferEnd - pipe->writePointer,min(size,BUFF_SIZE-pipe->bufferWriten));
+    text += amountCopied/(sizeof(char));    //Lo aumento el tamaño copiado en chars
+    size-=amountCopied;
+    pipe->bufferWriten+=amountCopied;
+    if(pipe->writePointer==pipe->bufferEnd ) //Debo volver al inicio del array si no esta lleno
+        pipe->writePointer=pipe->bufferInit;
+    else
+        pipe->writePointer+=amountCopied;
+    if(pipe->bufferWriten == BUFF_SIZE){
+        pipe->writen=1;
+        startreading(pipe);
+        if(size>0){
+            addWritingUser(pipe, size, text,pid);         //Lo pongo en la cola de espera
+            return;
+        }
+    }
+    if(size==0){
+        startreading(pipe);
+        return;
+    }
+    // Copio el resto del tamaño
+    memcpy(pipe->writePointer, text, min(size,BUFF_SIZE-pipe->bufferWriten));      
+    amountCopied =  min(size,BUFF_SIZE-pipe->bufferWriten);
+    size-=amountCopied;
+    pipe->bufferWriten+=amountCopied; 
+    pipe->writePointer += amountCopied;
+    if(size==0){
+        startreading(pipe);
+        return;
+    }
+    text += amountCopied/(sizeof(char));    //Lo aumento el tamaño copiado en chars
+    
+    pipe->writen = 1;
+    addWritingUser(pipe, size, text,pid);
+    startreading(pipe);
+}
+
+static uint64_t min(uint64_t num1,uint64_t num2){
+    return num1<num2? num1 : num2;
+}
+
+static void addReadingUser(Pipe* pipe, int size, char* text,uint64_t pid) {
     PipeUser* newUser = (PipeUser*)mallocFun(sizeof(PipeUser));
-    pipeArray[index]->lastWriteWaitingList->nextUser = newUser;
-    pipeArray[index]->lastWriteWaitingList = newUser;
-    newUser->bufferSize = size;
-    newUser->processBuffer = text;
+    if(pipe->firstReadWaitingList==NULL){
+        pipe->firstReadWaitingList=newUser;
+    }else{
+        pipe->lastReadWaitingList->nextUser = newUser;
+    }
+    pipe->lastReadWaitingList = newUser;
     newUser->nextUser = NULL;
+    newUser->pid=pid;
+    while(pipe->bufferWriten==0){
+        block(pid);
+    }
+    readFromBuffer(pipe,size,text,pid);
+}
+
+
+static void addWritingUser(Pipe* pipe, int size, char* text,uint64_t pid) {    
+    PipeUser* newUser = (PipeUser*)mallocFun(sizeof(PipeUser));
+    if(pipe->firstWriteWaitingList==NULL){
+        pipe->firstWriteWaitingList=newUser;
+    }else{
+        pipe->lastWriteWaitingList->nextUser = newUser;
+    }
+    pipe->lastWriteWaitingList = newUser;
+    newUser->nextUser = NULL;
+    newUser->pid=pid;
+    while(pipe->bufferWriten==BUFF_SIZE){
+        block(pid);
+    }
+    writeInBuffer(pipe,size,text,pid);
 }
 
 int printPipe(char* buf, Pipe* pipe) {
