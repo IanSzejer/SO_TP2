@@ -2,7 +2,7 @@
 #define _STDINOUT_H_
 
 
-#define NULL (void *)0
+#include<stddef.h>
 
 // Salida/Entrada
 #define STDIN 0

@@ -2,10 +2,9 @@
 #include "../include/scheduler.h"
 #include "../include/lib.h"
 #include "../include/memoryDriverPropio.h"
+#include "../../Userland/SampleCodeModule/include/stdinout.h"
 
 static semaphore_t semSpaces[MAX_SEM];
-static char* semPrint;
-
 static void initSems();
 static uint64_t findAvailableSpace();
 static uint64_t lockSem; // Para bloquear al momento de un open o close de cualquier semaforo.
@@ -37,7 +36,7 @@ static uint64_t findAvailableSpace()
 }
 
 static void initializeSem(uint64_t initValue, int pos, char *semName){
-    memcpy(semSpaces[pos].sem.name, semName, strlen(semName));
+    memcpy(semSpaces[pos].sem.name, semName, strlength(semName));
     semSpaces[pos].sem.value = initValue;
     semSpaces[pos].sem.lock = 0; // Inicialmente no esta lockeado.
     semSpaces[pos].sem.firstProcess = NULL;

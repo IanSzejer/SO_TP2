@@ -2,7 +2,15 @@
 #include "../include/scheduler.h"
 #include "../include/lib.h"
 
-
+static void addReadingUser(Pipe* pipe, int size, char* text,uint64_t pid);
+static int getReadRef(uint64_t pipeId);
+static int getWriteRef(uint64_t pipeId);
+static void readFromBuffer(Pipe* pipe,uint64_t pid,uint64_t size,char* text);
+static void writeInBuffer(Pipe* pipe,uint64_t pid,uint64_t size,char* text);
+static void startreading(Pipe* pipe);
+static void startWriting(Pipe* pipe);
+static void addWritingUser(Pipe* pipe, int size, char* text,uint64_t pid);
+static uint64_t min(uint64_t num1,uint64_t num2);
 
 
 
@@ -146,7 +154,7 @@ static void readFromBuffer(Pipe* pipe,uint64_t pid,uint64_t size,char* text){
         return;
     }
     text += amountCopied/(sizeof(char));    //Lo aumento el tamaño copiado en chars
-    addreadingUser(pipe, size, text,pid);
+    addReadingUser(pipe, size, text,pid);
     startWriting(pipe);
 }
 

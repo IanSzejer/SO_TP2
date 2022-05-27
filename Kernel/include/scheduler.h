@@ -103,6 +103,7 @@ uint64_t block(uint64_t pid);
 void* createContext(void *stack, uint64_t *arguments, void *(*funcion)(void *), int argc);
 void changePriority(uint64_t pid, uint64_t newPriority);
 ProcessNode *listAllProcess(char* buf);
+uint64_t getPid();
 
 
 #endif
