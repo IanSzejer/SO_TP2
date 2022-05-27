@@ -1,12 +1,12 @@
 #ifndef BUDDY
 
 #include "../include/lib.h"
-#include 
+//#include 
 
 
-void* mallocFun(uint64_t size);
+void* mallocFun(uint64_t nbytes);
 
-void freeFun(void *ap);
+void freeFun(void *block);
 
 void consult();
 #endif

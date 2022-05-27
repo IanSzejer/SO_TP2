@@ -4,7 +4,7 @@
 #define STDINT 0
 #define STDOUT 1
 #define STDERR 2
-#define MAX_NAME 100
+#define MAX_NAME_SCHED 100
 #define MAX_PRIO 10
 int tickCount;
 
@@ -58,11 +58,11 @@ typedef struct fileDescriptors
 
 typedef struct pcb_t
 {
-    char name[MAX_NAME];
+    char name[MAX_NAME_SCHED];
     uint64_t pid;
     uint64_t ppid; // parent pid
     uint64_t rsp;
-    uint64_t rbp;
+    void* rbp;
     uint64_t priority;
     uint64_t tickets;
     uint64_t* argv;
@@ -90,24 +90,19 @@ typedef struct processList
     ProcessNode* fg;
 } ProcessList;
 
-static char processInfo[]="PID      NAME        PRIORIDAD       STACK       BASE_POINTER    FOREGROUND";
+
 
 uint64_t getProcessRunning();
 void addPipe(uint64_t fd[2],uint64_t pid,uint64_t pipeRef,uint64_t pipeWriteRef);
 uint64_t initializeScheduler(char *argv[]);
 void createProcess(void *(*funcion)(void *), void *argv, int argc);
-ProcessList *createList(ProcessNode *nodeToAdd, uint64_t priority);
-void checkReady(ProcessNode *node, ProcessList *list);
 ProcessNode *addProcess(ProcessNode *nodeToAdd);
 ProcessNode *removeProcess(uint64_t pid);
 uint64_t unblock(uint64_t pid);
 uint64_t block(uint64_t pid);
-void *createContext(void *stack, uint16_t *arguments, void *(*funcion)(void *), int argc);
-uint64_t tickInterrupt();
-void changePriority(ProcessNode *current, uint64_t newPriority);
-ProcessNode *listAllProcess();
-static void initiateFd(ProcessNode* newProcess);
-void *createContext(void *stack, uint16_t *arguments, void *(*funcion)(void *), int argc);
-static int printInitial(char* buf);
-uint64_t getPid();
+void* createContext(void *stack, uint64_t *arguments, void *(*funcion)(void *), int argc);
+void changePriority(uint64_t pid, uint64_t newPriority);
+ProcessNode *listAllProcess(char* buf);
+
+
 #endif

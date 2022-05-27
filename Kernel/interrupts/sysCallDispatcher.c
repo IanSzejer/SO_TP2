@@ -33,21 +33,21 @@ static void memState();
 static void newProcess();
 static void endProcess(uint64_t pid);
 static void killProcess(uint64_t pid);
-static void *getAllProcesses();
+static void getAllProcesses();
 static int nice(uint64_t pid,uint64_t priority);
-static void changeState(void *ptr, int status);
-static void changeProcesses(void *(*funcion)(void *), void *argv, int argc);
-static void *createSemaphore();
-static void *openSemaphore(void *ptr);
-static uint64_t closeSemaphore(void *ptr);
+static void changeState(uint64_t pid, int status);
+static void changeProcesses();
+static int createSemaphore(char* name,uint64_t value);
+static uint64_t openSemaphore(char* name,uint64_t value);
+static uint64_t closeSemaphore(char* semName);
 static void *getSemaphores();
-static int wait(void *semaphore);
-static int post(void *semaphore);
-static void *createPipe(void *pipeArray);
-static void *openPipe(void *ptr);
+static uint64_t wait(char *semaphore);
+static uint64_t post(char *semaphore);
+static int createPipe(int pipeFd[2]);
+static void openPipe(void *ptr);
 static void writePipe(void *pipe, void *toWrite);
 static void *readPipe();
-static void *getPipes();
+static void getPipes();
 
 static SysCallR sysCalls[255] = {(SysCallR)&read, (SysCallR)&write, (SysCallR)&clear, (SysCallR)&splitScreen,
                                  (SysCallR)&changeScreen, (SysCallR)&getChar, (SysCallR)&ncClearLine, (SysCallR)&getTime, (SysCallR)&timerTick,
@@ -136,36 +136,6 @@ static int changeScreen(int screen)
     return ncChangeScreen(screen);
 }
 
-static int numToStr(int num, char *str)
-{
-    if (num == 0)
-    {
-        str[0] = '0';
-        return 1;
-    }
-    int neg = 0;
-    if (num < 0)
-    {
-        str[0] = '-';
-        str++;
-        num = num * (-1);
-        neg = 1;
-    }
-    int i, rem, n, len = 0;
-    n = num;
-    while (n != 0)
-    {
-        len++;
-        n /= 10;
-    }
-    for (i = 0; i < len; i++)
-    {
-        rem = num % 10;
-        num = num / 10;
-        str[len - (i + 1)] = rem + '0';
-    }
-    return len + neg;
-}
 
 static void getTime(char *buf)
 {
@@ -249,7 +219,7 @@ static void killProcess(uint64_t pid)
     removeProcess(pid);
 }
 
-static void *getAllProcesses()
+static void getAllProcesses()
 {
     char buf[MAX_STR_LENGTH];
     listAllProcess(buf);
@@ -276,15 +246,17 @@ static void changeState(uint64_t pid, int status)
 
 static void changeProcesses()
 {
+
 }
 
-static int *createSemaphore(char* name,uint64_t value)
+static int createSemaphore(char* name,uint64_t value)
 {
-    return remOpen(name,value);
+    return createSem(name,value);
 }
 
-static void *openSemaphore(void *ptr)
+static uint64_t openSemaphore(char* name,uint64_t value)
 {
+    return semOpen(name,value);
 }
 static uint64_t closeSemaphore(char* semName)
 {
@@ -297,23 +269,23 @@ static void *getSemaphores()
     sem(buf);
     write(STDOUT, buf, MAX_STR_LENGTH, WHITE);
 }
-static int wait(char *semaphore)
+static uint64_t wait(char *semaphore)
 {
     return semWait(semaphore);
 }
 
-static int post(char *semaphore)
+static uint64_t post(char *semaphore)
 {
     return semPost(semaphore);
 }
 
-static int *createPipe(int pipeFd[2])
+static int createPipe(int pipeFd[2])
 {
     uint64_t pid = getProcessRunning();
     return pipeFun(pipeFd,pid);
 }
 //Esta creo q no va
-static void *openPipe(void *ptr)
+static void openPipe(void *ptr)
 {
 }
 //Esta tmpco
@@ -326,7 +298,7 @@ static void *readPipe()
 {
 }
 
-static void *getPipes()
+static void getPipes()
 {
     char buf[MAX_STR_LENGTH];
     listPipes(buf);

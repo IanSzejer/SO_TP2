@@ -1,9 +1,10 @@
-#include "pipeManager.h"
-//#include "scheduler.h" INCLUIRLO CUANDO LO META CON EL RESTO DEL CODIGO
+#include "../include/pipeManager.h"
+#include "../include/scheduler.h"
+#include "../include/lib.h"
 
 
-typedef unsigned long long uint64_t;
-// Estructura que tendra un pipe
+
+
 
 
 static Pipe* pipeArray[PIPE_AMOUNT] = {0};
@@ -54,7 +55,7 @@ int pipeFun(int pipeFd[2], int processId) {
     newPipe->pipeWriteRef = getWriteRef(newPipe->pipeId);
     newPipe->nextPipe = NULL;
 
-    addPipe(pipeFd, processId, newPipe->pipeReadRef, newPipe->pipeWriteRef);
+    addPipe((uint64_t*)pipeFd, processId, newPipe->pipeReadRef, newPipe->pipeWriteRef);
     return 0;
 }
 
@@ -77,7 +78,7 @@ int writeInPipe(uint64_t writePipeId, uint64_t pid, int size, char* text) {
         return -1;
     }
     if (pipeArray[i]->writen == 1) {
-        addWritingUser(i, size, text,pid);
+        addWritingUser(pipeArray[i], size, text,pid);
     } else {
         // Como el array es circular, copio hasta el final, incremento el text y copio el resto
         writeInBuffer(pipeArray[i],pid,size,text);
@@ -95,7 +96,7 @@ int readFromPipe(uint64_t readPipeId, uint64_t pid, int size, char* text){
         return -1;
     }
     if (pipeArray[i]->bufferWriten == 0) {          //No hay nada escrito
-        addReadingUser(i, size, text,pid);
+        addReadingUser(pipeArray[i], size, text,pid);
     } else {
         // Como el array es circular, copio hasta el final, incremento el text y copio el resto
         readFromBuffer(pipeArray[i],pid,size,text);
@@ -243,7 +244,7 @@ static void addReadingUser(Pipe* pipe, int size, char* text,uint64_t pid) {
     while(pipe->bufferWriten==0){
         block(pid);
     }
-    readFromBuffer(pipe,size,text,pid);
+    readFromBuffer(pipe,pid,size,text);
 }
 
 
@@ -260,7 +261,7 @@ static void addWritingUser(Pipe* pipe, int size, char* text,uint64_t pid) {
     while(pipe->bufferWriten==BUFF_SIZE){
         block(pid);
     }
-    writeInBuffer(pipe,size,text,pid);
+    writeInBuffer(pipe,pid,size,text);
 }
 
 int printPipe(char* buf, Pipe* pipe) {

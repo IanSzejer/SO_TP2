@@ -31,7 +31,7 @@ typedef struct
 
 extern uint64_t _xchg(uint64_t *lock, int value);
 
-void initSems();
+int createSem(char *semName, uint64_t initValue);
 uint64_t semOpen(char *name, uint64_t initValue);
 uint64_t semClose(char *name);
 uint64_t semWait(char* semName);

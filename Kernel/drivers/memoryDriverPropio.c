@@ -23,7 +23,7 @@ static char* infoTotalMessage = "La memoria total es: ";
 static char* infoLibreMessage = ", la memoria libre es: ";
 static char* infoOcupadaMessage = ", la memoria ocupada es: ";
 
-void* mallocFun(unsigned nbytes) {
+void* mallocFun(uint64_t nbytes) {
     if (firstNode == NULL) {
 
         firstNode =(MemoryNodePtr) INITIAL_POSITION;

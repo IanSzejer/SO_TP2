@@ -61,10 +61,10 @@ void *mallocFun(uint64_t nbytes)
 {
     if(base==NULL)
         initializeMem();
-    if (size == 0)
+    if (nbytes == 0)
         return NULL;
     uint64_t totalSize;
-    if ((totalSize = size + (sizeof(list_t) * 2)) > baseSize) // ...
+    if ((totalSize = nbytes + (sizeof(list_t) * 2)) > baseSize) // ...
         return NULL;
 
     uint64_t bucketLevel = getBucketLevel(totalSize);
@@ -86,9 +86,9 @@ void *mallocFun(uint64_t nbytes)
 
 void freeFun(void *block)
 {
-    if (ap == NULL) // || (uint64_t)ap % HEADER_SIZE
+    if (block == NULL) // || (uint64_t)ap % HEADER_SIZE
         return;
-    list_t *list = (list_t *)ap - 1;
+    list_t *list = (list_t *)block - 1;
     list->occupied = 0;
     availableMem += BIN_POW(MIN_ALLOC_LOG2 + list->bucketLevel);
 

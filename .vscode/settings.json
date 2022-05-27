@@ -15,6 +15,7 @@
         "stopwatch.h": "c",
         "portable.h": "c",
         "scheduler.h": "c",
-        "pipemanager.h": "c"
+        "pipemanager.h": "c",
+        "sem.h": "c"
     }
 }
