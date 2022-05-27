@@ -8,7 +8,7 @@
 #include "videoColors.h"
 #include "scheduler.h"
 #include "pipeManager.h"
-
+#include "sem.h"
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
@@ -31,10 +31,10 @@ static void *malloc(size_t size);
 static void free(void *ptr);
 static void memState();
 static void newProcess();
-static void endProcess(void *ptr);
-static void killProcess(void *ptr);
+static void endProcess(uint64_t pid);
+static void killProcess(uint64_t pid);
 static void *getAllProcesses();
-static void nice(void *ptr);
+static int nice(uint64_t pid,uint64_t priority);
 static void changeState(void *ptr, int status);
 static void changeProcesses(void *(*funcion)(void *), void *argv, int argc);
 static void *createSemaphore();
@@ -263,50 +263,72 @@ static int nice(uint64_t pid,uint64_t priority)
     changePriority(pid,priority);
     return 1;
 }
-static void changeState(void *ptr, int status)
+static void changeState(uint64_t pid, int status)
 {
+    if(status==READY)
+        unblock(pid);
+    else if(status==BLOCKED)
+        block(pid);
+    else 
+        removeProcess(pid);
+
 }
 
 static void changeProcesses()
 {
 }
 
-static void *createSemaphore()
+static int *createSemaphore(char* name,uint64_t value)
 {
+    return remOpen(name,value);
 }
 
 static void *openSemaphore(void *ptr)
 {
 }
-static void closeSemaphore(void *ptr)
+static uint64_t closeSemaphore(char* semName)
 {
+    return semClose(semName);
 }
 
 static void *getSemaphores()
 {
+    char buf[MAX_STR_LENGTH];
+    sem(buf);
+    write(STDOUT, buf, MAX_STR_LENGTH, WHITE);
 }
-static void wait(void *semaphore)
+static int wait(char *semaphore)
 {
+    return semWait(semaphore);
 }
 
-static void post(void *semaphore)
+static int post(char *semaphore)
 {
+    return semPost(semaphore);
 }
 
-static void *createPipe(void *pipeArray)
+static int *createPipe(int pipeFd[2])
 {
+    uint64_t pid = getProcessRunning();
+    return pipeFun(pipeFd,pid);
 }
+//Esta creo q no va
 static void *openPipe(void *ptr)
 {
 }
-
+//Esta tmpco
 static void writePipe(void *pipe, void *toWrite)
 {
+    //return writeInPipe()
 }
-
+//Esta tmpco
 static void *readPipe()
 {
 }
+
 static void *getPipes()
 {
+    char buf[MAX_STR_LENGTH];
+    listPipes(buf);
+    write(STDOUT, buf, MAX_STR_LENGTH, WHITE);
 }
