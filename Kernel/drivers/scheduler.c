@@ -22,6 +22,11 @@ static uint64_t getNewPid() {
 uint64_t getPid(){
     return currentProcess->pcb.pid;
 }
+
+uint64_t getProcessRunning(){
+    return currentProcess->pcb.pid;
+}
+
 uint64_t initializeScheduler(char* argv[]) {
     firstList = NULL;
     currentProcess = NULL;

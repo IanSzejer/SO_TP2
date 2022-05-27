@@ -1,7 +1,7 @@
 #include "../include/sem.h"
 
 static semaphore_t semSpaces[MAX_SEM];
-static string semPrint;
+static char* semPrint;
 
 static int createSem(char *name, uint64_t initValue);
 static uint64_t findAvailableSpace();
@@ -9,7 +9,7 @@ static uint64_t lockSem; // Para bloquear al momento de un open o close de cualq
 static uint64_t findSem(char *name);
 static uint64_t enqeueProcess(uint64_t pid, sem_t *sem);
 static uint64_t dequeueProcess(sem_t *sem);
-void printSem(sem_t sem);
+int printSem(char* buf,sem_t sem);
 void printProcessesBlocked(process_t *process);
 
 
@@ -131,8 +131,9 @@ uint64_t semClose(char *name)
     return 1;
 }
 
-uint64_t semWait(uint64_t semIndex)
+uint64_t semWait(char* semName)
 {
+    uint64_t semIndex=findSem(semName);
     if (semIndex >= MAX_SEM)
         return -1;
     sem_t *sem = &semSpaces[semIndex].sem;
@@ -164,9 +165,10 @@ uint64_t semWait(uint64_t semIndex)
     return 0;
 }
 
-uint64_t semPost(uint64_t semIndex)
+uint64_t semPost(char* semName)
 {
-    if (semIndex >= MAX_SEM)
+    uint64_t semIndex=findSem(semName);
+    if (semIndex == -1)
     {
         return -1;
     }
@@ -202,21 +204,30 @@ static uint64_t findSem(char *name)
     return -1;
 }
 
-void sem()
+static int copyText(char* buf,char* text){
+    int i=0;
+    while(text[i]!='\0'){
+        *(buf++)=text[i];
+        i++;
+    }
+    return i;
+
+}
+
+void sem(char* buf)
 {
-    *(semPrint++) = ("SEM'S NAME\t\tSTATE\t\tBLOCKED PROCESSES\n");
-    // print("SEM'S NAME\t\tSTATE\t\tBLOCKED PROCESSES\n");
+    char semText[] = ("SEM'S NAME\t\tSTATE\t\tBLOCKED PROCESSES\n");
+    buf+= copyText(buf,semText);
     for (int i = 0; i < MAX_SEM; i++)
     {
         int toPrint = !(semSpaces[i].available);
         if (toPrint)
         {
-            *(semPrint++) = (semSpaces[i].sem);
-            // printSem(semSpaces[i].sem);
+            buf+= printSem(buf,semSpaces[i].sem);
         }
     }
+    buf+='\0';
 }
-
 
 char *getSemName(uint64_t semIndex)
 {
@@ -251,15 +262,36 @@ void printProcessesSem(uint64_t semIndex)
     printProcessesBlocked(sem.firstProcess);
 }
 
-void printSem(sem_t sem)
+int printSem(char* buf,sem_t sem)
 {
-    print(sem.name);
-    if (strlen(sem.name) > 10)
-        print("\t\t");
-    else
-        print("\t\t\t\t");
-    printInt(sem.value);
-    print("\t\t\t");
-    printProcessesBlocked(sem.firstProcess);
-    print("\n");
+    int i=0;
+    while(sem.name[i]!='\0'){
+        *(buf++)=sem.name[i];
+        i++;
+    }
+    if (i > 10){
+        *(buf++)='\t';
+        *(buf++)='\t';
+        i+=2;
+    }
+    else{
+        *(buf++)='\t';
+        *(buf++)='\t';
+        *(buf++)='\t';
+        *(buf++)='\t';
+        i+=4;
+    }
+    int c=0;
+    c += numToStr(sem.value,buf);
+    buf+=c;
+    *(buf++)='\t';
+    *(buf++)='\t';
+    *(buf++)='\t';
+    c+=3;
+    int j=0;
+    if (sem.firstProcess!=NULL)
+        j+= numToStr(sem.firstProcess->pid,buf);
+    *(buf++)='\n';
+    j++;
+    return i+c+j;
 }

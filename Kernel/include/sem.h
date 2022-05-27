@@ -3,7 +3,8 @@
 
 #define MAX_NAME 15
 #define MAX_SEM 30
-
+#define TRUE 1
+#define FALSE 0
 #include <lib.h>
 
 typedef struct pNode
@@ -33,8 +34,8 @@ extern uint64_t _xchg(uint64_t *lock, int value);
 void initSems();
 uint64_t semOpen(char *name, uint64_t initValue);
 uint64_t semClose(char *name);
-uint64_t semWait(uint64_t semIndex);
-uint64_t semPost(uint64_t semIndex);
+uint64_t semWait(char* semName);
+uint64_t semPost(char* semName);
 void sem();
 char *getSemName(uint64_t semIndex);
 void printProcessesSem(uint64_t semIndex);

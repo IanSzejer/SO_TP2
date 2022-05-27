@@ -3,6 +3,7 @@
 #define INIT_BUFF_SIZE 1024
 #define FD_AMOUNT 256
 #define PIPE_AMOUNT 20
+
 typedef unsigned long long uint64_t;
 // Estructura que tendra un pipe
 
@@ -164,6 +165,7 @@ int printPipe(char* buf, Pipe* pipe) {
     while (pipePhrase1[i] != '\0') {
         *(buf++) = pipePhrase1[i++];
     }
+    
     i += numToStr(pipe->pipeId, buf);
     int c = 0;
     if (pipe->writen) {
@@ -175,5 +177,7 @@ int printPipe(char* buf, Pipe* pipe) {
             *(buf++) = pipePhrase1[c++];
         }
     }
+    *(buf++)='\n';
+    i++;
     return c + i;
 }

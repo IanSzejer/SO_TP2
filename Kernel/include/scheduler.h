@@ -92,6 +92,7 @@ typedef struct processList
 
 static char processInfo[]="PID      NAME        PRIORIDAD       STACK       BASE_POINTER    FOREGROUND";
 
+uint64_t getProcessRunning();
 void addPipe(uint64_t fd[2],uint64_t pid,uint64_t pipeRef,uint64_t pipeWriteRef);
 uint64_t initializeScheduler(char *argv[]);
 void createProcess(void *(*funcion)(void *), void *argv, int argc);
