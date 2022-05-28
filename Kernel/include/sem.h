@@ -35,7 +35,7 @@ extern void forceTimer();
 
 int createSem(char *semName, uint64_t initValue);
 
-uint64_t semOpen(char *name, uint64_t initValue);
+int semOpen(char *name, uint64_t initValue);
 uint64_t semClose(char *name);
 uint64_t semWait(char* semName);
 uint64_t semPost(char* semName);

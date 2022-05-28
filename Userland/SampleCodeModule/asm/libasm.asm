@@ -23,7 +23,7 @@ GLOBAL get_regs
 
 GLOBAL get_memory
 
-GLOBALmalloc
+GLOBAL malloc
 
 GLOBAL free
 
@@ -51,10 +51,9 @@ GLOBAL closeSemaphore
 
 GLOBAL getSemaphores
 
-GLOBAL wait
+GLOBAL waitSem
 
-GLOBAL post
-
+GLOBAL postSem
 
 GLOBAL createPipe
 
@@ -62,6 +61,8 @@ GLOBAL openPipe
 
 
 GLOBAL getPipes
+
+GLOBAL getPid
 
 %macro pushStateSysCall 0
 	push rbx
@@ -277,10 +278,10 @@ closeSemaphore:
 getSemaphores:
     sysCall 25
 
-wait:
+waitSem:
     sysCall 26
 
-post:
+postSem:
     sysCall 27
 
 createPipe:
@@ -292,3 +293,5 @@ openPipe:
 getPipes:
     sysCall 30
 
+getPid:
+    sysCall 31

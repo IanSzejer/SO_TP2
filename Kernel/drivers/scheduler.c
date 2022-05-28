@@ -1,7 +1,7 @@
 #include "../include/lib.h"
 #include "../include/memoryDriverPropio.h"
 #include "../include/scheduler.h"
-
+#include "interrupts.h"
 #define MAX_SIZE 200
 #define FIRST_PID 1
 #define PROCESS_SIZE 10000 // El stack del proceso sera de 10000 bits
@@ -45,22 +45,21 @@ uint64_t getProcessRunning(){
 }
 
 void dummy(){
-    while(1){}
+    _hlt();
 }
 
 void initializeScheduler() {
-    dummyProcess=createProcess((void*(*)(void*))&dummy,"dummy",1,"dummy");
-    changeState(dummyProcess->pcb.pid,BLOCKED);
-
+    //createProcess((void*(*)(void*))&dummy,"dummy",1,"dummy");
+    //changeState(dummyProcess->pcb.pid,BLOCKED);
+    
 }
 // Como argumento recibe un puntero a funcion, como es un proceso no se que parametros recibe
 // Por ahora digo que devuelve void*, por decreto recibe hasta 3 argumentos de tamaño uint64_t
-ProcessNode * createProcess(void* (*funcion)(void*), void* argv, int argc,char* processName) {
+uint64_t createProcess(void* (*funcion)(void*), void* argv, int argc,char* processName) {
     uint64_t* arguments = mallocFun(3 * sizeof(uint64_t));
     memcpy(arguments, argv, 3 * sizeof(uint64_t));
     void* stack = mallocFun(PROCESS_SIZE);
     void* stackTopPtr = createContext(stack, arguments, funcion, argc);
-
     ProcessNode* newProcess = mallocFun(sizeof(ProcessNode));
     newProcess->pcb.rbp=stack;
     memcpy(newProcess->pcb.name,processName,strlength(processName)*sizeof(char));
@@ -80,7 +79,7 @@ ProcessNode * createProcess(void* (*funcion)(void*), void* argv, int argc,char* 
     // faltan cosas del pcb pero queria verlo con ustedes
     addProcess(newProcess);
     // asignar prioridad
-    return newProcess;
+    return newProcess->pcb.pid;
 }
 
 static int strlength(char* text){

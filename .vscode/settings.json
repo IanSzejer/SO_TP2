@@ -20,6 +20,7 @@
         "stddef.h": "c",
         "cstdint": "c",
         "stdint-gcc.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "phylo.h": "c"
     }
 }

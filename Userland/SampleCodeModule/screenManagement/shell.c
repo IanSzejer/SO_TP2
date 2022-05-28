@@ -1,7 +1,5 @@
 #include "shell.h"
-#include <scheduler.h>
-#include <memoryDriverPropio.h>
-#include <pipeManager.h>
+#include "stdinout.h"
 #include <phylo.h>
 
 typedef struct
@@ -23,6 +21,12 @@ void loadCommand(void (*f)(), char *name, char *desc);
 void copyOneLineUp(shell_line shellBuffer[SHELLH]);
 void copyCommandDescriptor(char *buf, t_shellc cmd);
 void copyLinesToShellOutput(char lines[][SHELLW], int qty);
+void loop(char seconds);
+void cat();
+void wc();
+void filter();
+
+
 
 static char buffer1[32] = {0};
 static char buffer2[32] = {0};
@@ -165,14 +169,6 @@ void printmem(char *dirString)
     copyLinesToShellOutput(output, 2);
 }
 
-void multipleWindowsDispatcher()
-{
-    multipleWindows();
-    split_screen(1, 0);
-    console_clear();
-    split_screen(2, 0);
-}
-
 void copyOneLineUp(shell_line shellBuffer[SHELLH])
 {
     for (int i = 0; i < SHELLH - 1; i++)
@@ -209,7 +205,6 @@ void copyLinesToShellOutput(char lines[][SHELLW], int qty)
 
 void setupShellCommands()
 {
-    loadCommand(&multipleWindowsDispatcher, "multiple", "Starts multiple window environment");
     loadCommand(&printDateTime, "datetime", "Displays the date and time");
     loadCommand(&help, "help", "Shows a list of available commands");
     loadCommand(&inforeg, "inforeg", "Shows the value of all registers");
@@ -221,34 +216,28 @@ void setupShellCommands()
     loadCommand(&wc,"wc", "counts the amount of lines inputed ");
     loadCommand(&filter,"filter", "prints what its received,excluding vocals");
     loadCommand(&phylo,"philosophers","philosopher problem");
-    loadCommand(&consult,"mem","see memory status");
-    loadCommand(&removeProcess,"kill","kill a process");
-    loadCommand(&changePriority,"nice","change a process priority");
-    loadCommand(&block,"block","block a process");
-    loadCommand(&listPipes,"pipe","see pipes status");
-    loadCommand(&listAllProcess,"ps","see processes status");
+    loadCommand(&memState,"mem","see memory status");
+    loadCommand(&kill,"kill","kill a process");
+    loadCommand(&nice,"nice","change a process priority");
+    loadCommand(&changeState,"block","block a process");
+    loadCommand(&getPipes,"pipe","see pipes status");
+    loadCommand(&getAllProcesses,"ps","see processes status");
 
 }
 
 void cat(){
-     char buffer[100];
-    while(scanf(buffer)>0)
-        print(buffer);
-    char buffer[100];
-    int count;
+    char ascii;
+    while((ascii=getCharSys())>0)
+        print(&ascii);
     
-    while(scanf(buffer)>0)
-        count++;
-    char num[1];
-    num[0]=intToChar(count);
-    print(num);
+    
 }
 
 void wc(){
     char buffer[100];
     int count;
     
-    while(scanf(buffer)>0)
+    while(system_read(STDIN,buffer,100)>0)
         count++;
     char num[1];
     num[0]=intToChar(count);
@@ -256,7 +245,7 @@ void wc(){
 }
 void filter(){
     char buffer[100];
-    while(scanf(buffer)>0)
+    while(system_read(STDIN,buffer,100)>0)
     {
         int i=0;
         while(buffer[i]){
@@ -276,7 +265,7 @@ void loop(char seconds){
         print("hola soy ");
         print(string);
         print("\n");
-        sleep(sec);
+   //     sleep(sec);
     }
     else print("ERROR:No se inserto un numero");
 

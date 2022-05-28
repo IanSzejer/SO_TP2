@@ -96,7 +96,7 @@ void* tickInterrupt();
 uint64_t getProcessRunning();
 void addPipe(uint64_t fd[2],uint64_t pid,uint64_t pipeRef,uint64_t pipeWriteRef);
 void initializeScheduler();
-ProcessNode * createProcess(void* (*funcion)(void*), void* argv, int argc,char* processName);
+uint64_t createProcess(void* (*funcion)(void*), void* argv, int argc,char* processName);
 void addProcess(ProcessNode *nodeToAdd);
 void removeProcess(uint64_t pid);
 uint64_t killProcess(uint64_t pid);

@@ -1,6 +1,6 @@
 #ifndef PHYLO_H
 #define PHYLO_H
-#include "shell.h"
+#include "stdinout.h"
 typedef enum
 {
     FOREGROUND,

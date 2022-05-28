@@ -3,7 +3,7 @@
 
 
 #include<stddef.h>
-
+typedef __UINT64_TYPE__ uint64_t;
 // Salida/Entrada
 #define STDIN 0
 #define STDOUT 1
@@ -12,7 +12,7 @@
 #include "chardefs.h"
 
 
-extern int system_read(unsigned int fd, char* buffer, unsigned int buffercount, unsigned int ascii);    
+extern int system_read(unsigned int fd, char* buffer, unsigned int buffercount);    
 extern int system_write(unsigned int fd, char*buffer, unsigned int buffersize, char color);
 extern void console_clear();  
 extern int split_screen(int screens, int screen); // retorna 1 si la seleccion es valida. -1 si no.
@@ -25,7 +25,26 @@ extern void set_kb_target(int * var);
 extern void get_date(char * buf);
 extern void get_regs(char ** buf);
 extern void get_memory(unsigned int * p);
-
+extern void *malloc(size_t size);
+extern void free(void *ptr);
+extern void memState();
+extern uint64_t newProcess(void *(*funcion)(void *), void *argv, int argc,char* name);
+extern void endProcess(uint64_t pid);
+extern void kill(uint64_t pid);
+extern void getAllProcesses();
+extern int getPid();
+extern int nice(uint64_t pid,uint64_t priority);
+extern void changeState(uint64_t pid, int status);
+extern void changeProcesses();
+extern int createSemaphore(char* name,uint64_t value);
+extern int openSemaphore(char* name,uint64_t value);
+extern int closeSemaphore(char* semName);
+extern void getSemaphores();
+extern int waitSem(char* semaphore);
+extern int postSem(char* semaphore);
+extern int createPipe(int pipeFd[2]);
+extern void openPipe(void *ptr);
+extern void getPipes();
 
 void print(char * string);
 int strlength(char * string);

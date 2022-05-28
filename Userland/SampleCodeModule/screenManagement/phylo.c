@@ -24,7 +24,7 @@ enum state{
 
 static phylo_t phylos[MAX_PHYL];
 static int seated;
-uint64_t sem;
+char* sem;
 
 
 static int addPhylo(int pIndex);
@@ -41,7 +41,7 @@ int right(int pIndex);
 
 void phylo(int argc, char** argv){
     print("Bienvenido a PHYLO \n");
-    if((sem = _semOpen(SEM_PHYL,1)) == -1){
+    if((sem = openSemaphore(SEM_PHYL,1)) == -1){
         print("Error abriendo semaforo\n");
         return;
         
@@ -77,7 +77,7 @@ void phylo(int argc, char** argv){
         case 'q':
         case 'Q':
             endTable();
-            if (_semClose(SEM_PHYL) == -1)
+            if ((closeSemaphore(SEM_PHYL)) == -1)
                 print("Error cerrando semaforo\n");
             // _unblock(2);
             return;
@@ -90,26 +90,26 @@ static int addPhylo(int pIndex){
         return -1;
     }
 
-    _semWait(sem);
+    waitSem(sem);
     seated++;
     char semName[LENGTH] = "phyl";
     numToStr(pIndex, phylos[pIndex].semName, LENGTH);
     strcat(phylos[pIndex].semName, semName);
-    if((phylos[pIndex].semIndex = _semOpen(phylos[pIndex].semName,1)) == -1){
+    if((phylos[pIndex].semIndex = openSemaphore(phylos[pIndex].semName,1)) == -1){
         print("Error abriendo semaforo");
         return -1;
     }
     char currentSeated[LENGTH];
-    uintToBase(seated, currentSeated, 10);
+    //uintToBase(seated, currentSeated, 10);
     char * argv[] = {"phylo", currentSeated};
     phylos[pIndex].state = THINK;
 
-    if((phylos[pIndex].pid == _createProcess(&phyloProcess,2, argv, BACKGROUND, NULL)) == 0){
+    if((phylos[pIndex].pid = newProcess((void *(*)(void*))&phyloProcess,argv,1,"phylo")) == 0){
         print("Error creando proceso filosofo");
         return -1;
     }
 
-    _semPost(sem);
+    postSem(sem);
     return 0;
 }
 
@@ -118,29 +118,29 @@ void phyloProcess(int argc, char **argv)
     int index = atoi(argv[1]);
     while (1)
     {
-        sleep(QUANTUM);
+        //sleep(QUANTUM);
         takeChopstick(index);
-        sleep(QUANTUM);
+        //sleep(QUANTUM);
         putChopstick(index);
     }
 }
 
 void takeChopstick(int pIndex)
 {
-    _semWait(sem);
+    waitSem(sem);
     phylos[pIndex].state = WAIT;
     update(pIndex);
-    _semPost(sem);
-    _semWait(phylos[pIndex].semIndex);
+    postSem(sem);
+    waitSem(phylos[pIndex].semIndex);
 }
 
 void putChopstick(int pIndex)
 {
-    _semWait(sem);
+    waitSem(sem);
     phylos[pIndex].state = THINK;
     update(left(pIndex));
     update(right(pIndex));
-    _semPost(sem);
+    postSem(sem);
 }
 
 int left(int pIndex)
@@ -159,7 +159,7 @@ void update(int pIndex)
     {
         phylos[pIndex].state = EAT;
         printState();
-        _semPost(phylos[pIndex].semIndex);
+        postSem(phylos[pIndex].semIndex);
     }
 }
 
@@ -168,24 +168,22 @@ static int removePhylo(int pIndex){
         return -1;
     }
 
-    _semWait(sem);
+    waitSem(sem);
     seated--;
     
     int eat = (phylos[pIndex].state==EAT);
 
-    if(_semClose(phylos[pIndex].semName) == -1){
+    if(closeSemaphore(phylos[pIndex].semName) == -1){
         print("Error cerrando semaforo\n");
     }
-    if(_kill(phylos[pIndex].pid) == -1){
-        print("Error matando el proceso filosofo\n");
-    }
+    kill(phylos[pIndex].pid); 
 
     if(eat){
         update(pIndex-1);
         update(0);
     }
 
-    __semPost(sem);
+    postSem(sem);
     return 0;
 }
 
@@ -193,16 +191,12 @@ void endTable()
 {
     while (seated > 0)
     {
-        if (_semClose(phylos[seated - 1].semName) == -1)
+        if (closeSemaphore(phylos[seated - 1].semName) == -1)
         {
             print("Error cerrando el filosofo\n");
             return;
         }
-        if (_kill(phylos[seated - 1].pid) == -1)
-        {
-            print("Error maando el proceso filosofo\n");
-            return;
-        }
+        kill(phylos[seated - 1].pid);
         seated--;
     }
 }

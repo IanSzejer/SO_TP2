@@ -30,7 +30,7 @@ static void getDate(char *buf);
 static void *malloc(size_t size);
 static void free(void *ptr);
 static void memState();
-static void newProcess(void *(*funcion)(void *), void *argv, int argc,char* name);
+static uint64_t newProcess(void *(*funcion)(void *), void *argv, int argc,char* name);
 static void endProcess(uint64_t pid);
 static void kill(uint64_t pid);
 static void getAllProcesses();
@@ -38,14 +38,15 @@ static int nice(uint64_t pid,uint64_t priority);
 static void changeState(uint64_t pid, int status);
 static void changeProcesses();
 static int createSemaphore(char* name,uint64_t value);
-static uint64_t openSemaphore(char* name,uint64_t value);
-static uint64_t closeSemaphore(char* semName);
+static int openSemaphore(char* name,uint64_t value);
+static int closeSemaphore(char* semName);
 static void getSemaphores();
-static uint64_t wait(char *semaphore);
-static uint64_t post(char *semaphore);
+static int wait(char* semaphore);
+static int post(char* semaphore);
 static int createPipe(int pipeFd[2]);
 static void openPipe(void *ptr);
 static void getPipes();
+static int getPidSys();
 
 static SysCallR sysCalls[255] = {(SysCallR)&read, (SysCallR)&write, (SysCallR)&clear, (SysCallR)&splitScreen,
                                  (SysCallR)&changeScreen, (SysCallR)&getCharSys, (SysCallR)&ncClearLine, (SysCallR)&getTime, (SysCallR)&timerTick,
@@ -54,7 +55,7 @@ static SysCallR sysCalls[255] = {(SysCallR)&read, (SysCallR)&write, (SysCallR)&c
                                  (SysCallR)&changeState, (SysCallR)&changeProcesses, (SysCallR)&createSemaphore, (SysCallR)&openSemaphore,
                                  (SysCallR)&closeSemaphore, (SysCallR)&getSemaphores,
                                  (SysCallR)&wait, (SysCallR)&post, (SysCallR)&createPipe, (SysCallR)&openPipe,
-                                 (SysCallR)&getPipes};
+                                 (SysCallR)&getPipes,(SysCallR)&getPidSys};
 
 uint64_t sysCallDispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_t rax)
 {
@@ -216,9 +217,9 @@ static void memState()
     write(STDOUT, buf, MAX_STR_LENGTH, WHITE);
 }
 
-static void newProcess(void *(*funcion)(void *), void *argv, int argc,char* name)
+static uint64_t newProcess(void *(*funcion)(void *), void *argv, int argc,char* name)
 {
-    createProcess(funcion,argv,argc,name);
+    return createProcess(funcion,argv,argc,name);
 }
 
 static void endProcess(uint64_t pid)
@@ -266,11 +267,11 @@ static int createSemaphore(char* name,uint64_t value)
     return createSem(name,value);
 }
 
-static uint64_t openSemaphore(char* name,uint64_t value)
+static int openSemaphore(char* name,uint64_t value)
 {
     return semOpen(name,value);
 }
-static uint64_t closeSemaphore(char* semName)
+static int closeSemaphore(char* semName)
 {
     return semClose(semName);
 }
@@ -281,12 +282,12 @@ static void getSemaphores()
     sem(buf);
     write(STDOUT, buf, MAX_STR_LENGTH, WHITE);
 }
-static uint64_t wait(char *semaphore)
+static int wait(char* semaphore)
 {
     return semWait(semaphore);
 }
 
-static uint64_t post(char *semaphore)
+static int post(char* semaphore)
 {
     return semPost(semaphore);
 }
@@ -307,4 +308,8 @@ static void getPipes()
     char buf[MAX_STR_LENGTH];
     listPipes(buf);
     write(STDOUT, buf, MAX_STR_LENGTH, WHITE);
+}
+
+static int getPidSys(){
+    return (int)getProcessRunning();
 }

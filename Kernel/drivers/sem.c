@@ -109,7 +109,7 @@ static uint64_t dequeueProcess(sem_t *sem)
 }
 
 
-uint64_t semOpen(char *name, uint64_t initValue)
+int semOpen(char *name, uint64_t initValue)
 {
     while (_xchg(&lockSem, 1) != 0) // esperando a que el lock este disponible
         ;
