@@ -75,11 +75,11 @@ static int getWriteRef(uint64_t pipeId) {
     return pipeId * 2 + 101;
 }
 
-int writeInPipe(uint64_t writePipeId, uint64_t pid, int size, char* text) {
+int writeInPipe(uint64_t writePipeRef, uint64_t pid, int size, char* text) {
     int found = 0;
     int i = 0;
     for (; i < PIPE_AMOUNT && !found; i++) {
-        if (pipeArray[i] != NULL && pipeArray[i]->pipeId == writePipeId)
+        if (pipeArray[i] != NULL && pipeArray[i]->pipeWriteRef == writePipeRef)
             found = 1;
     }
     if (found == 0) {
@@ -91,13 +91,14 @@ int writeInPipe(uint64_t writePipeId, uint64_t pid, int size, char* text) {
         // Como el array es circular, copio hasta el final, incremento el text y copio el resto
         writeInBuffer(pipeArray[i],pid,size,text);
     }
+    return size;
 }
 
-int readFromPipe(uint64_t readPipeId, uint64_t pid, int size, char* text){
+int readFromPipe(uint64_t readPipeRef, uint64_t pid, int size, char* text){
     int found = 0;
     int i = 0;
     for (; i < PIPE_AMOUNT && !found; i++) {
-        if (pipeArray[i] != NULL && pipeArray[i]->pipeId == readPipeId)
+        if (pipeArray[i] != NULL && pipeArray[i]->pipeReadRef == readPipeRef)
             found = 1;
     }
     if (found == 0) {
@@ -109,6 +110,7 @@ int readFromPipe(uint64_t readPipeId, uint64_t pid, int size, char* text){
         // Como el array es circular, copio hasta el final, incremento el text y copio el resto
         readFromBuffer(pipeArray[i],pid,size,text);
     }
+    return size;
 }
 
 //No estoy seguro si tiene q imprimir directo o devolver en un buffer

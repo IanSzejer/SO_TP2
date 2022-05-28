@@ -1,4 +1,4 @@
-#include "memoryDriver.h"
+/*#include "memoryDriver.h"
 
 #define HEADER_SIZE 8
 #define MIN_ALLOC_LOG2 6                     // 64 bytes
@@ -229,3 +229,4 @@ static int isEmpty(list_t *list)
 {
     return list->prev==list;
 }
+*/

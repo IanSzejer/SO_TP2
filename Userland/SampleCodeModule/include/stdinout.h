@@ -27,8 +27,6 @@ extern void get_regs(char ** buf);
 extern void get_memory(unsigned int * p);
 
 
-    
-
 void print(char * string);
 int strlength(char * string);
 void printColor(char * string, char color);
@@ -39,7 +37,7 @@ int isDigit(char c);
 int charToDigit(char c);
 char toLower(char c);
 char toUpper(char c);
-int getChar();
+int getCharSys();
 int putChar(char c);
 int putCharColor(char c, char color);
 int strcmp(char * s1, char * s2);

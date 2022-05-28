@@ -42,8 +42,8 @@ int ncSplitConsole(int screenQty, int screenNum) {
 
 	if (!VALID_SCR_QTY(screenQty) || screenNum >= screenQty )
 		return -1;
-		screens = screenQty;
-		screen = screenNum;
+	screens = screenQty;
+	screen = screenNum;
 	if (screenQty == 1) {
 		shift = 0;
 		width = WIDTH;

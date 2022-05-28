@@ -1,4 +1,3 @@
-
 #include "../include/lib.h"
 #include "../include/memoryDriverPropio.h"
 #include "../include/scheduler.h"
@@ -8,25 +7,25 @@
 #define PROCESS_SIZE 10000 // El stack del proceso sera de 10000 bits
 #define BASE_PRIORITY 1
 
-// lista 20{procesos:proceso1}
+static int ready;
 static ProcessList* firstList;
 static ProcessNode* currentProcess;
 static ProcessNode* dummyProcess;
 static uint64_t pidCounter = 1;
-
+int tickCountScheduler;
+static int strlength(char* text);
 static uint64_t getNewPid();
 static ProcessList* recursiveAddList(ProcessNode* nodeToAdd, ProcessList* list) ;
 static ProcessList* createList(ProcessNode* nodeToAdd, uint64_t priority);
 static void checkReady(ProcessNode* node, ProcessList* list) ;
 static ProcessList* removeRecursiveList(ProcessList* list, ProcessNode* process);
-static ProcessNode* removeRecursiveNode(ProcessNode* node, ProcessNode* node2, int* deleted);
+static ProcessNode* removeRecursiveNode(ProcessNode* node, ProcessNode* node2, ProcessList* list);
 static void* getNextReady();
 static ProcessNode* getRecursiveNextReady(ProcessNode* current) ;
 static void initiateFd(ProcessNode* newProcess);
 static uint64_t changeState(uint64_t pid, states newState);
-static uint64_t tickInterrupt();
 static ProcessList* change(ProcessList* list, ProcessNode* process);
-static ProcessNode* changeProcess(ProcessNode* node, ProcessNode* node2, int* deleted);
+static ProcessNode* changeNode(ProcessNode* node, ProcessNode* node2, ProcessList* list);
 static int printInitial(char* buf);
 static int printProcess(ProcessNode* node,char* buf);
 static ProcessNode* findNode(uint64_t pid);
@@ -45,16 +44,18 @@ uint64_t getProcessRunning(){
     return currentProcess->pcb.pid;
 }
 
-uint64_t initializeScheduler(char* argv[]) {
-    firstList = NULL;
-    currentProcess = NULL;
-    //crear dummyProcess
-    return dummyProcess->pcb.rsp;
+void dummy(){
+    while(1){}
+}
+
+void initializeScheduler() {
+    dummyProcess=createProcess((void*(*)(void*))&dummy,"dummy",1,"dummy");
+    changeState(dummyProcess->pcb.pid,BLOCKED);
 
 }
 // Como argumento recibe un puntero a funcion, como es un proceso no se que parametros recibe
 // Por ahora digo que devuelve void*, por decreto recibe hasta 3 argumentos de tamaño uint64_t
-void createProcess(void* (*funcion)(void*), void* argv, int argc) {
+ProcessNode * createProcess(void* (*funcion)(void*), void* argv, int argc,char* processName) {
     uint64_t* arguments = mallocFun(3 * sizeof(uint64_t));
     memcpy(arguments, argv, 3 * sizeof(uint64_t));
     void* stack = mallocFun(PROCESS_SIZE);
@@ -62,6 +63,7 @@ void createProcess(void* (*funcion)(void*), void* argv, int argc) {
 
     ProcessNode* newProcess = mallocFun(sizeof(ProcessNode));
     newProcess->pcb.rbp=stack;
+    memcpy(newProcess->pcb.name,processName,strlength(processName)*sizeof(char));
     newProcess->priority = BASE_PRIORITY;
     newProcess->pcb.pid = getNewPid();
     newProcess->pcb.rsp = stackTopPtr; // Aca se tiene que empezar a popear, no estoy seguro
@@ -78,21 +80,32 @@ void createProcess(void* (*funcion)(void*), void* argv, int argc) {
     // faltan cosas del pcb pero queria verlo con ustedes
     addProcess(newProcess);
     // asignar prioridad
+    return newProcess;
+}
+
+static int strlength(char* text){
+    int i=0;
+    while(text[i]!='\0'){
+        i++;
+    }
+    return i+1;
 }
 
 static ProcessList* createList(ProcessNode* nodeToAdd, uint64_t priority) {
-    ProcessList* newList = NULL;
+    ProcessList* newList = ( ProcessList*)mallocFun(sizeof(ProcessList));
     newList->nextList = NULL;
     newList->first = nodeToAdd;
     newList->last = nodeToAdd;
     newList->priority = priority;
-    newList->nReady = 0;
+    newList->ready = 0;
     newList->size = 0;
+    return newList;
 }
 
 static void checkReady(ProcessNode* node, ProcessList* list) {
-    if (node->pcb.state == READY)
-        list->nReady++;
+    if (node->pcb.state == READY){
+        list->ready++;
+        ready++;}
     list->size++;
 }
 
@@ -120,7 +133,7 @@ static ProcessList* recursiveAddList(ProcessNode* nodeToAdd, ProcessList* list) 
     return list;
 }
 
-ProcessNode* addProcess(ProcessNode* nodeToAdd) {
+void addProcess(ProcessNode* nodeToAdd) {
     if (nodeToAdd == NULL) {
         return;
     }
@@ -128,91 +141,80 @@ ProcessNode* addProcess(ProcessNode* nodeToAdd) {
     firstList = recursiveAddList(nodeToAdd, firstList);
 }
 
-ProcessNode* removeProcess(uint64_t pid) {
+void removeProcess(uint64_t pid) {
     ProcessNode* process=findNode(pid);
     if (process!=NULL)
-    firstList = removeRecursiveList(firstList, process);
+        firstList = removeRecursiveList(firstList, process);
 }
 
 static ProcessList* removeRecursiveList(ProcessList* list, ProcessNode* process) {
-    ProcessList* aux;
-    int deleted;
-    int ready;
     if (list == NULL)
         return NULL;
+    
+    // si encontre la lista
     if (list->priority == process->priority) {
-        if (list->size == 1) {
-            aux = list->nextList;
-            freeFun(list);
-            return aux;
-        }
-        if (process->pcb.state == READY)
-            ready++;
-        removeRecursiveNode(list->first, process, &deleted);
-        if (deleted) {
-            list->size--;
-            if (ready) {
-                list->nReady--;
-            }
-        }
+        //busco el nodo y lo elimino
+        list->first = removeRecursiveNode(list->first, process, list);
     } else if (list->priority > process->priority) {
+        //si me pase fin
         return list;
     }
+
     list->nextList = removeRecursiveList(list->nextList, process);
     return list;
 }
 
-static ProcessNode* removeRecursiveNode(ProcessNode* node, ProcessNode* node2, int* deleted) {
+
+static ProcessNode* removeRecursiveNode(ProcessNode* node, ProcessNode* node2, ProcessList* list) {
     ProcessNode* aux;
     if (node == NULL) {
         return NULL;
     }
     if (node->pcb.pid == node2->pcb.pid) {
+        if(node->pcb.state == READY){
+            list->ready--;
+            ready--;
+        }
         aux = node->next;
         freeFun(node->pcb.argv);    //Libero el espacio reservado para arg
         freeFun(node->pcb.rbp);     //Libero el stack del proceso
         freeFun(node);              //Libero el espacio reservado para el nodo
-        *deleted ++;
+        list->size--;
         return aux;
-    } else if (node->pcb.pid > node2->pcb.pid) {
+    } else if (node->pcb.priority > node2->pcb.priority) {
         return node;
     }
-    node->next = removeRecursiveNode(node->next, node2, deleted);
+    node->next = removeRecursiveNode(node->next, node2, list);
+    return node;
 }
 
 static void* getNextReady() {
     // Si el proceso actual termino lo elimino
+    
     if (currentProcess->pcb.state == KILLED) {
-         removeProcess(currentProcess->pcb.pid);
+        removeProcess(currentProcess->pcb.pid);
     }
-
-    // Si la prioridad del proximo es mayor a la del primero => current vuelve al inicio
-    // Sigo con la prioridad baja hasta q termine
+    
+    if(ready==0){
+        currentProcess =dummyProcess;
+        return (dummyProcess->pcb.rsp);
+    }
+    
     currentProcess = getRecursiveNextReady(currentProcess->next);
-    // if(currentProcess->next->priority > firstList->first->priority){
-    //     currentProcess =  firstList->first;
-    // }else{
-    //     currentProcess = currentProcess->next;
-    // }
-    if (currentProcess==NULL)
-    return dummyProcess->pcb.rsp;
+        
     return currentProcess->pcb.rsp;
 }
 
 static ProcessNode* getRecursiveNextReady(ProcessNode* current) {
     if (current == NULL) {
-        return NULL;
+        return getRecursiveNextReady(firstList->first);
     }
 
     if (current->pcb.state == BLOCKED) {
         return getRecursiveNextReady(current->next);
     }
 
-    if (current->priority <= firstList->first->priority) {
-        return current;
-    } else {
-        return firstList->first;
-    }
+    return current;
 }
 
 static void initiateFd(ProcessNode* newProcess) {
@@ -220,6 +222,14 @@ static void initiateFd(ProcessNode* newProcess) {
         newProcess->pcb.fd[i].fd = 11;
         newProcess->pcb.fd[i].reference = 11;
     }
+}
+
+uint64_t killProcess(uint64_t pid)
+{  
+    uint16_t done = changeState(pid, KILLED);
+    if (pid == currentProcess->pcb.pid)
+        forceTimer();
+    return done;
 }
 
 uint64_t unblock(uint64_t pid) {
@@ -231,11 +241,24 @@ uint64_t unblock(uint64_t pid) {
 uint64_t block(uint64_t pid) {
     if (pid < FIRST_PID)
         return -1;
-    return changeState(pid, BLOCKED);
+    uint64_t toReturn = changeState(pid, BLOCKED);
+    if (pid == currentProcess->pcb.pid)
+    {
+        forceTimer();
+    }
+    return toReturn;
 }
 
 static uint64_t changeState(uint64_t pid, states newState) {
-    struct processNode* processNode = findNode(pid);
+    struct processNode* processNode;
+
+    if(newState == KILLED){
+        removeProcess(pid);
+        return 0;
+    }
+
+    processNode = findNode(pid);
+
     if (processNode == NULL) {
         return -1;
     }
@@ -245,9 +268,11 @@ static uint64_t changeState(uint64_t pid, states newState) {
     }
 
     if (processNode->pcb.state != READY && newState == READY) {
-        firstList->nReady++;
+        firstList->ready++;
+        ready++;
     } else if (processNode->pcb.state == READY && newState != READY) {
-        firstList->nReady--;
+        firstList->ready--;
+        ready--;
     }
 
     processNode->pcb.state = newState;
@@ -256,12 +281,12 @@ static uint64_t changeState(uint64_t pid, states newState) {
 
 void* createContext(void* stack, uint64_t* arguments, void* (*funcion)(void*), int argc) {
     StackFrame_t* stackStruct = (StackFrame_t*)stack;
-    stackStruct->base = stack;
+    stackStruct->base =(uint64_t) stack;
     stackStruct->ss = 0x0;
     stackStruct->rsp = stackStruct->base;
     stackStruct->rflags = 0x202;
     stackStruct->cs = 0x8;
-    stackStruct->rip = funcion;
+    stackStruct->rip =(uint64_t) funcion;
     stackStruct->r15 = 0;
     stackStruct->r14 = 0;
     stackStruct->r13 = 0;
@@ -270,7 +295,7 @@ void* createContext(void* stack, uint64_t* arguments, void* (*funcion)(void*), i
     stackStruct->r10 = 0;
     stackStruct->r9 = 0;
     stackStruct->r8 = 0;
-    stackStruct->rsi = arguments;
+    stackStruct->rsi =(uint64_t) arguments;
     stackStruct->rdi = argc;
     stackStruct->rbp = stackStruct->base;
     stackStruct->rdx = 0;
@@ -280,10 +305,10 @@ void* createContext(void* stack, uint64_t* arguments, void* (*funcion)(void*), i
     return &stackStruct->rax;
 }
 
-static uint64_t tickInterrupt() {
+void* tickInterrupt() {
     if (currentProcess != NULL) {
-        tickCount++;
-        if (tickCount > 9 - currentProcess->priority) {
+        tickCountScheduler++;
+        if (tickCountScheduler > 18 - 2*currentProcess->priority) {
             getNextReady();
         }
     }
@@ -296,53 +321,51 @@ static uint64_t tickInterrupt() {
 
 void changePriority(uint64_t pid, uint64_t newPriority) {
     ProcessNode* current=findNode(pid);
-    if(current!=NULL){
+
+    if(current == NULL || current->priority == newPriority){
+        return;
+    }
+
     firstList = change(firstList, current);
+    //como desaparecio de la lista pero no fue eliminado puedo acceder a current
+    //le cambio la prioridad y lo agrego a la lista
     current->priority = newPriority;
-    addProcess(current);}
+    addProcess(current);
+    
 }
 
 static ProcessList* change(ProcessList* list, ProcessNode* process) {
-    ProcessList* aux;
-    int deleted;
-    int ready;
     if (list == NULL)
         return NULL;
+    // si encontre la lista
     if (list->priority == process->priority) {
-        if (list->size == 1) {
-            aux = list->nextList;
-            return aux;
-        }
-        if (process->pcb.state == READY)
-            ready++;
-        changeProcess(list->first, process, &deleted);
-        if (deleted) {
-            list->size--;
-            if (ready) {
-                list->nReady--;
-            }
-        }
+        list->first = changeNode(list->first, process, list);
     } else if (list->priority > process->priority) {
         return list;
     }
+
     list->nextList = change(list->nextList, process);
     return list;
 }
 
-static ProcessNode* changeProcess(ProcessNode* node, ProcessNode* node2, int* deleted) {
-    ProcessNode* aux;
+
+static ProcessNode* changeNode(ProcessNode* node, ProcessNode* node2, ProcessList* list) {
+    
     if (node == NULL) {
         return NULL;
     }
+
     if (node->pcb.pid == node2->pcb.pid) {
-        aux = node->next;
-        *deleted++;
-        return aux;
-    } else if (node->pcb.pid > node2->pcb.pid) {
+        //si lo encontre "lo salteo" -> hago q apunten al next y desaparezco de la lista
+        return node->next;
+    } else if (node->pcb.priority > node2->pcb.priority) {
         return node;
     }
-    node->next = changeProcess(node->next, node2, deleted);
+
+    node->next = changeNode(node->next, node2, list);
+    return node;
 }
+
 
 ProcessNode* listAllProcess(char* buf) {
     buf += printInitial(buf);
@@ -361,7 +384,7 @@ ProcessNode* listAllProcess(char* buf) {
         aux = aux->nextList;
     }
 
-    return toReturn;
+    return *toReturn;
 }
 
 static int printInitial(char* buf){
@@ -380,27 +403,37 @@ static int printProcess(ProcessNode* node,char* buf){
     *(buf++)='\t';
     *(buf++)='\t';
     i+=2;
-    /*
-    nombre
-    */
-    i += numToStr(node->priority,buf);
-    buf+=i;
+    int c=strlength(node->pcb.name)-1;
+    memcpy(buf,node->pcb.name,c);     //Agrego todo el nombre menos el \0
+    i+=c;
+    buf+=c;
+    *(buf++)='\t';
+    *(buf++)='\t';
+    i+=2;
+    c=0;
+    c = numToStr(node->priority,buf);
+    i+=c;
+    buf+=c;
     *(buf++)='\t';
     *(buf++)='\t';
     i+=2;
     *(buf++)='0';
     *(buf++)='x';
     i+=2;
-    i += hexaToString((int)node->pcb.rsp,buf);
-    buf+=i;
+    c=0;
+    c= hexaToString((uint64_t)node->pcb.rsp,buf);
+    i+=c;
+    buf+=c;
     *(buf++)='\t';
     *(buf++)='\t';
     i+=2;
     *(buf++)='0';
     *(buf++)='x';
     i+=2;
-    i += hexaToString((int)node->pcb.rbp,buf);
-    buf+=i;
+    c=0;
+    c= hexaToString((uint64_t)node->pcb.rbp,buf);
+    i+=c;
+    buf+=c;
     *(buf++)='\t';
     *(buf++)='\t';
     i+=2;
@@ -463,4 +496,9 @@ void addPipe(uint64_t fd[2], uint64_t pid, uint64_t pipeReadRef, uint64_t pipeWr
     // Si sale del for es que no hay 2 fd para asignar un pipe
     fd[0] = 0;
     fd[1] = 0;
+}
+
+
+uint64_t getFdRef(uint64_t fd){
+    return currentProcess->pcb.fd[fd].reference;
 }

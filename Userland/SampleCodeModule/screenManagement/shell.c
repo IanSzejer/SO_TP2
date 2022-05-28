@@ -1,5 +1,3 @@
-
-
 #include "shell.h"
 #include <scheduler.h>
 #include <memoryDriverPropio.h>

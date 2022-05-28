@@ -18,21 +18,21 @@ extern void infoReg(char **buf);
 
 typedef uint64_t (*SysCallR)(uint64_t, uint64_t, uint64_t, uint64_t); // defino un puntero a funcion SysCallR
 
-static long read(unsigned int fd, char *buf, uint64_t count); // deberia ser lo mismo que size_t
-static long write(unsigned int fd, char *buf, uint64_t count, char color);
+static uint64_t read(unsigned int fd, char *buf, uint64_t count); // deberia ser lo mismo que size_t
+static long write(uint64_t fd, char *buf, uint64_t count, int color);
 static void clear();
 static int splitScreen(int screens, int screen);
 static int changeScreen(int screen);
-static int getChar(unsigned int ascii);
+static int getCharSys(unsigned int ascii);
 static void getTime(char *buf);
 static long timerTick(void (*f)());
 static void getDate(char *buf);
 static void *malloc(size_t size);
 static void free(void *ptr);
 static void memState();
-static void newProcess();
+static void newProcess(void *(*funcion)(void *), void *argv, int argc,char* name);
 static void endProcess(uint64_t pid);
-static void killProcess(uint64_t pid);
+static void kill(uint64_t pid);
 static void getAllProcesses();
 static int nice(uint64_t pid,uint64_t priority);
 static void changeState(uint64_t pid, int status);
@@ -40,23 +40,21 @@ static void changeProcesses();
 static int createSemaphore(char* name,uint64_t value);
 static uint64_t openSemaphore(char* name,uint64_t value);
 static uint64_t closeSemaphore(char* semName);
-static void *getSemaphores();
+static void getSemaphores();
 static uint64_t wait(char *semaphore);
 static uint64_t post(char *semaphore);
 static int createPipe(int pipeFd[2]);
 static void openPipe(void *ptr);
-static void writePipe(void *pipe, void *toWrite);
-static void *readPipe();
 static void getPipes();
 
 static SysCallR sysCalls[255] = {(SysCallR)&read, (SysCallR)&write, (SysCallR)&clear, (SysCallR)&splitScreen,
-                                 (SysCallR)&changeScreen, (SysCallR)&getChar, (SysCallR)&ncClearLine, (SysCallR)&getTime, (SysCallR)&timerTick,
+                                 (SysCallR)&changeScreen, (SysCallR)&getCharSys, (SysCallR)&ncClearLine, (SysCallR)&getTime, (SysCallR)&timerTick,
                                  (SysCallR)&set_kb_target, (SysCallR)&getDate, (SysCallR)&getRegs, (SysCallR)&malloc, (SysCallR)&free,
-                                 (SysCallR)&malloc, (SysCallR)&free, (SysCallR)&memState, (SysCallR)&newProcess, (SysCallR)&endProcess, (SysCallR)&killProcess, (SysCallR)&getAllProcesses, (SysCallR)&nice,
+                                 (SysCallR)&memState, (SysCallR)&newProcess, (SysCallR)&endProcess, (SysCallR)&kill, (SysCallR)&getAllProcesses, (SysCallR)&nice,
                                  (SysCallR)&changeState, (SysCallR)&changeProcesses, (SysCallR)&createSemaphore, (SysCallR)&openSemaphore,
                                  (SysCallR)&closeSemaphore, (SysCallR)&getSemaphores,
                                  (SysCallR)&wait, (SysCallR)&post, (SysCallR)&createPipe, (SysCallR)&openPipe,
-                                 (SysCallR)&writePipe, (SysCallR)&readPipe, (SysCallR)&getPipes};
+                                 (SysCallR)&getPipes};
 
 uint64_t sysCallDispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_t rax)
 {
@@ -77,13 +75,18 @@ static long timerTick(void (*f)())
     return ticks_elapsed();
 }
 
-static long write(unsigned int fd, char *buf, uint64_t count, char color)
+static long write(uint64_t fd, char *buf, uint64_t count, int color)
 {
+    uint64_t ref;
     if (buf == NULL)
         return -1;
     if (fd == STDERR)
         color = RED;
-    else if (fd != STDOUT)
+    else if((ref=getFdRef(fd))>=100 && ref<122 && ref%2==1){
+        writeInPipe(ref,getProcessRunning(),strlen(buf,count),buf);
+        return strlen(buf,count);
+    }
+    else if ( ref!=STDOUT)
     {
         return -1;
     }
@@ -106,14 +109,23 @@ static long write(unsigned int fd, char *buf, uint64_t count, char color)
     return i > 0 ? i : -1;
 }
 
-static long read(unsigned int fd, char *buf, uint64_t count)
+static uint64_t read(unsigned int fd, char *buf, uint64_t count)
 {
-    if (fd != 0)
-        return -1; // solo acepta teclado
+    uint64_t ref;
+    if (buf == NULL)
+        return -1;
+    if((ref=getFdRef(fd))>=100 && ref<122 && ref%2==0){
+        readFromPipe(ref,getProcessRunning(),count,buf);
+        return count;//Por ahora, esto lo tengo que cambiar
+    }
+    else if ( ref!=STDIN)
+    {
+        return -1;
+    }
     return readFromKeyboard(buf, count, 1);
 }
 
-static int getChar(unsigned int ascii)
+static int getCharSys(unsigned int ascii)
 {
     int a;
     for (int i = 0; i < 1; i++)
@@ -204,9 +216,9 @@ static void memState()
     write(STDOUT, buf, MAX_STR_LENGTH, WHITE);
 }
 
-static void newProcess(void *(*funcion)(void *), void *argv, int argc)
+static void newProcess(void *(*funcion)(void *), void *argv, int argc,char* name)
 {
-    createProcess(funcion,argv,argc);
+    createProcess(funcion,argv,argc,name);
 }
 
 static void endProcess(uint64_t pid)
@@ -214,7 +226,7 @@ static void endProcess(uint64_t pid)
     removeProcess(pid);
 }
 
-static void killProcess(uint64_t pid)
+static void kill(uint64_t pid)
 {
     removeProcess(pid);
 }
@@ -263,7 +275,7 @@ static uint64_t closeSemaphore(char* semName)
     return semClose(semName);
 }
 
-static void *getSemaphores()
+static void getSemaphores()
 {
     char buf[MAX_STR_LENGTH];
     sem(buf);
@@ -288,15 +300,7 @@ static int createPipe(int pipeFd[2])
 static void openPipe(void *ptr)
 {
 }
-//Esta tmpco
-static void writePipe(void *pipe, void *toWrite)
-{
-    //return writeInPipe()
-}
-//Esta tmpco
-static void *readPipe()
-{
-}
+
 
 static void getPipes()
 {

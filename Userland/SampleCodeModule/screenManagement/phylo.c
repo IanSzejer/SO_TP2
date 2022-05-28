@@ -1,5 +1,4 @@
 #include "../include/phylo.h"
-#include <lib.h>
 
 #define MAX_PHYL 15
 #define MIN_PHYL 2 
@@ -7,6 +6,8 @@
 #define SEM_PHYL "semPhylos"
 #define LENGTH 10
 #define QUANTUM 3
+
+
 
 typedef struct {
     uint64_t pid;
@@ -55,7 +56,7 @@ void phylo(int argc, char** argv){
 
     print("Presione 'a' para agregar o 'r' para eliminar un filosofo. Presione 'q' para salir\n");
     char c;
-    while ((c = getChar()) != 0)
+    while ((c = getCharSys()) != 0)
     {
         switch (c)
         {
@@ -90,7 +91,7 @@ static int addPhylo(int pIndex){
     }
 
     _semWait(sem);
-    seated++:
+    seated++;
     char semName[LENGTH] = "phyl";
     numToStr(pIndex, phylos[pIndex].semName, LENGTH);
     strcat(phylos[pIndex].semName, semName);
@@ -120,7 +121,7 @@ void phyloProcess(int argc, char **argv)
         sleep(QUANTUM);
         takeChopstick(index);
         sleep(QUANTUM);
-        putChopstick();
+        putChopstick(index);
     }
 }
 

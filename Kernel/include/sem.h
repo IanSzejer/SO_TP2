@@ -1,4 +1,4 @@
-#include <lib.h>
+#include "lib.h"
 #ifndef SEM_H
 #define SEM_H
 
@@ -31,6 +31,7 @@ typedef struct
 } semaphore_t;
 
 extern uint64_t _xchg(uint64_t *lock, int value);
+extern void forceTimer();
 
 int createSem(char *semName, uint64_t initValue);
 
@@ -40,8 +41,6 @@ uint64_t semWait(char* semName);
 uint64_t semPost(char* semName);
 void sem(char* buf);
 char *getSemName(uint64_t semIndex);
-void printProcessesSem(uint64_t semIndex);
-void printProcessesBlocked(process_t *process);
 int printSem(char* buf,sem_t sem);
 
 #endif

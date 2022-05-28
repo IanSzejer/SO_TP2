@@ -146,7 +146,7 @@ int numToStr(int num, char * str) {
 }
 
 //Pasa int a hexa y lo guarda en buf
-int hexaToString(int n,char* buf){
+int hexaToString(uint64_t n,char* buf){
 	int base=16;
     int i = 12;
     int j = 0;
@@ -162,6 +162,32 @@ int hexaToString(int n,char* buf){
        buf[j++] = buf[i];
     }
 	return j;
+}
+
+int strcmp(char *X, char *Y)
+{
+    while (*X)
+    {
+
+        if (*X != *Y) {
+            break;
+        }
+ 
+
+        X++;
+        Y++;
+    }
+ 
+
+    return *(const unsigned char*)X - *(const unsigned char*)Y;
+}
+//Da el lenght contado el /0 final
+uint64_t strlen(char* text,uint64_t size){
+    int i=0;
+    while(text[i]!= '\0' && i<size){
+        i++;
+    }
+    return i+1;
 }
 
 

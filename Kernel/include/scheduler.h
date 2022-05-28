@@ -6,18 +6,18 @@
 #define STDERR 2
 #define MAX_NAME_SCHED 100
 #define MAX_PRIO 10
-int tickCount;
+
 
 typedef struct stackframe
 {
     // Registers restore context
     uint64_t rax;
     uint64_t rbx;
-    uint64_t rcx;
-    uint64_t rdx;
+    uint64_t rcx; //pid
+    uint64_t rdx; 
     uint64_t rbp;
-    uint64_t rdi;
-    uint64_t rsi;
+    uint64_t rdi; //argc
+    uint64_t rsi; //argv
     uint64_t r8;
     uint64_t r9;
     uint64_t r10;
@@ -61,7 +61,7 @@ typedef struct pcb_t
     char name[MAX_NAME_SCHED];
     uint64_t pid;
     uint64_t ppid; // parent pid
-    uint64_t rsp;
+    void* rsp;
     void* rbp;
     uint64_t priority;
     uint64_t tickets;
@@ -86,24 +86,27 @@ typedef struct processList
     struct processList *nextList;
     uint64_t priority;
     uint32_t size;
-    uint32_t nReady;
+    uint32_t ready;
     ProcessNode* fg;
 } ProcessList;
 
+extern void forceTimer();
 
-
+void* tickInterrupt();
 uint64_t getProcessRunning();
 void addPipe(uint64_t fd[2],uint64_t pid,uint64_t pipeRef,uint64_t pipeWriteRef);
-uint64_t initializeScheduler(char *argv[]);
-void createProcess(void *(*funcion)(void *), void *argv, int argc);
-ProcessNode *addProcess(ProcessNode *nodeToAdd);
-ProcessNode *removeProcess(uint64_t pid);
+void initializeScheduler();
+ProcessNode * createProcess(void* (*funcion)(void*), void* argv, int argc,char* processName);
+void addProcess(ProcessNode *nodeToAdd);
+void removeProcess(uint64_t pid);
+uint64_t killProcess(uint64_t pid);
 uint64_t unblock(uint64_t pid);
 uint64_t block(uint64_t pid);
 void* createContext(void *stack, uint64_t *arguments, void *(*funcion)(void *), int argc);
 void changePriority(uint64_t pid, uint64_t newPriority);
 ProcessNode *listAllProcess(char* buf);
 uint64_t getPid();
+uint64_t getFdRef(uint64_t fd);
 
 
 #endif

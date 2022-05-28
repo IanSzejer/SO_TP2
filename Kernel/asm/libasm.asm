@@ -170,6 +170,16 @@ _syscallHandler:
 	popState
 	iretq
 
+GLOBAL forceTimer
+forceTimer:
+	int 20h
+	ret
+
+GLOBAL _xchg
+_xchg:
+	mov rax, rsi
+	xchg [rdi], eax
+	ret
 
 ; GLOBAL infoReg
 

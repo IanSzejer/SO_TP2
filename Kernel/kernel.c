@@ -5,6 +5,7 @@
 #include <idtLoader.h>
 #include <keyboard.h>
 #include <clock.h>
+#include <scheduler.h>
 #include <interrupts.h>
 #include <exceptions.h>
 
@@ -61,10 +62,11 @@ void * initializeKernelBinary()
 int main()
 {		
 	setExceptionRebootPoint((uint64_t)sampleCodeModuleAddress, getStack());
-	load_idt();
 	ncInitVideoConsole();
-
-	((EntryPoint)sampleCodeModuleAddress)();
+	//((EntryPoint)sampleCodeModuleAddress)();
+	initializeScheduler("");
+	createProcess(sampleCodeModuleAddress,"shell",1,"shell");
+	load_idt();
 
 	return 0;
 }

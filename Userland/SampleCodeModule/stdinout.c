@@ -240,7 +240,7 @@ char * strcpy(char* destination, char* source)
 }
 
 
-int getChar() {
+int getCharSys() {
     return get_char(1);
 }
 

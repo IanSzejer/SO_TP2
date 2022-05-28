@@ -16,6 +16,10 @@
         "portable.h": "c",
         "scheduler.h": "c",
         "pipemanager.h": "c",
-        "sem.h": "c"
+        "sem.h": "c",
+        "stddef.h": "c",
+        "cstdint": "c",
+        "stdint-gcc.h": "c",
+        "stdlib.h": "c"
     }
 }

@@ -12,7 +12,7 @@ GLOBAL _irq02Handler
 GLOBAL _irq03Handler
 GLOBAL _irq04Handler
 GLOBAL _irq05Handler
-GLOBAL HANDLER
+GLOBAL handler
 GLOBAL _exception00Handler
 GLOBAL _exception06Handler
 
@@ -22,7 +22,7 @@ EXTERN irqDispatcher
 EXTERN exceptionDispatcher
 
 EXTERN sysCallDispatcher
-EXTERN timerTick
+EXTERN tickInterrupt
 SECTION .text
 
 %macro pushState 0
@@ -117,7 +117,7 @@ handler:
 	pushState
 
 	mov rdi, rsp
-	call timerTick
+	call tickInterrupt
 	mov rsp, rax
 	mov al, 20h
 	out 20h, al

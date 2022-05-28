@@ -23,6 +23,46 @@ GLOBAL get_regs
 
 GLOBAL get_memory
 
+GLOBALmalloc
+
+GLOBAL free
+
+GLOBAL memState
+
+GLOBAL newProcess
+
+GLOBAL endProcess
+
+GLOBAL kill
+
+GLOBAL getAllProcesses
+
+GLOBAL nice
+
+GLOBAL changeState
+
+GLOBAL changeProcesses
+
+GLOBAL createSemaphore
+
+GLOBAL openSemaphore
+
+GLOBAL closeSemaphore
+
+GLOBAL getSemaphores
+
+GLOBAL wait
+
+GLOBAL post
+
+
+GLOBAL createPipe
+
+GLOBAL openPipe
+
+
+GLOBAL getPipes
+
 %macro pushStateSysCall 0
 	push rbx
 	push rcx
@@ -193,3 +233,62 @@ get_date:
 
 get_regs:
     sysCall 11
+
+
+malloc:
+    sysCall 12
+
+free:
+    sysCall 13
+
+memState:
+    sysCall 14
+
+newProcess:
+    sysCall 15
+
+endProcess:
+    sysCall 16
+
+kill:
+    sysCall 17
+
+getAllProcesses:
+    sysCall 18
+
+nice:
+    sysCall 19
+
+changeState:
+    sysCall 20
+
+changeProcesses:
+    sysCall 21
+
+createSemaphore:
+    sysCall 22
+
+openSemaphore:
+    sysCall 23
+
+closeSemaphore:
+    sysCall 24
+
+getSemaphores:
+    sysCall 25
+
+wait:
+    sysCall 26
+
+post:
+    sysCall 27
+
+createPipe:
+    sysCall 28
+
+openPipe:
+    sysCall 29
+
+getPipes:
+    sysCall 30
+
