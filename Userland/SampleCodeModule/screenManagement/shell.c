@@ -399,3 +399,12 @@ int cmdIndex(char *buf)
     }
     return -1;
 }
+
+
+void sleep(int seconds)
+{
+    int secondsElapsed = _secondsElapsed();
+    int finalTime = seconds + secondsElapsed;
+    while (_secondsElapsed() <= finalTime)
+        ;
+}

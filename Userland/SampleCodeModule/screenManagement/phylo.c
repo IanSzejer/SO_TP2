@@ -79,7 +79,6 @@ void phylo(int argc, char** argv){
             endTable();
             if ((closeSemaphore(SEM_PHYL)) == -1)
                 print("Error cerrando semaforo\n");
-            // _unblock(2);
             return;
         }
     }
@@ -100,7 +99,7 @@ static int addPhylo(int pIndex){
         return -1;
     }
     char currentSeated[LENGTH];
-    //uintToBase(seated, currentSeated, 10);
+    uintToBase(seated, currentSeated, 10);
     char * argv[] = {"phylo", currentSeated};
     phylos[pIndex].state = THINK;
 
@@ -118,9 +117,9 @@ void phyloProcess(int argc, char **argv)
     int index = atoi(argv[1]);
     while (1)
     {
-        //sleep(QUANTUM);
+        sleep(QUANTUM);
         takeChopstick(index);
-        //sleep(QUANTUM);
+        sleep(QUANTUM);
         putChopstick(index);
     }
 }
