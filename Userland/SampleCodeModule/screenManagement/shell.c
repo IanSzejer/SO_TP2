@@ -36,8 +36,6 @@ static char consoleMsg1[80] = {0};
 static char consoleMsg2[80] = {0};
 char *consoleMsg = consoleMsg1;
 static uint8_t *const video = (uint8_t *)0xB8000;
-static const uint32_t width = 80;
-static const uint32_t height = 25;
 static int cmdCounter = 0;
 int currentShell = 0;
 static int flag = 1;
@@ -211,14 +209,14 @@ void setupShellCommands()
     loadCommand(&printmem, "printmem", "Prints 32 bytes of memory from arg. address");
     loadCommand(&divideByZero, "exception0", "Executes rutine that generates \"division by zero\" exception");
     loadCommand(&invalidOpCode, "exception6", "Executes rutine that generates \"invalid op. code\" exception");
-    loadCommand(&loop,"loop","prints a message with a delay inputed by user");
+    loadCommand((void (*)())&loop,"loop","prints a message with a delay inputed by user");
     loadCommand(&cat,"cat", "prints what its received");
     loadCommand(&wc,"wc", "counts the amount of lines inputed ");
     loadCommand(&filter,"filter", "prints what its received,excluding vocals");
     loadCommand(&phylo,"philosophers","philosopher problem");
     loadCommand(&memState,"mem","see memory status");
     loadCommand(&kill,"kill","kill a process");
-    loadCommand(&nice,"nice","change a process priority");
+    loadCommand((void (*)())&nice,"nice","change a process priority");
     loadCommand(&changeState,"block","block a process");
     loadCommand(&getPipes,"pipe","see pipes status");
     loadCommand(&getAllProcesses,"ps","see processes status");
@@ -257,15 +255,14 @@ void filter(){
     }
 }
 void loop(char seconds){
-    int sec;
     char string[1];
-    string[0]=intToChar(getPid);
+    string[0]=intToChar(getPidSys());
     if(charToDigit(seconds)>=0)
     while(1){
         print("hola soy ");
         print(string);
         print("\n");
-   //     sleep(sec);
+        sleep(seconds);
     }
     else print("ERROR:No se inserto un numero");
 
@@ -403,8 +400,8 @@ int cmdIndex(char *buf)
 
 void sleep(int seconds)
 {
-    int secondsElapsed = _secondsElapsed();
-    int finalTime = seconds + secondsElapsed;
-    while (_secondsElapsed() <= finalTime)
+    long _secondsElapsed = secondsElapsed();
+    int finalTime = seconds + _secondsElapsed;
+    while (secondsElapsed() <= finalTime)
         ;
 }

@@ -22,6 +22,7 @@ void irqDispatcher(uint64_t irq, uint64_t rsp)
 
 void int_20()
 {
+	ncPrint("Timer Handlder");
 	timer_handler();
 	
 }

@@ -21,6 +21,11 @@
         "cstdint": "c",
         "stdint-gcc.h": "c",
         "stdlib.h": "c",
-        "phylo.h": "c"
+        "phylo.h": "c",
+        "shell.h": "c",
+        "atomic": "c",
+        "*.tcc": "c",
+        "istream": "c",
+        "ostream": "c"
     }
 }

@@ -313,3 +313,4 @@ static void getPipes()
 static int getPidSys(){
     return (int)getProcessRunning();
 }
+

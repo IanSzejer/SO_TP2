@@ -1,7 +1,6 @@
 #include "../include/lib.h"
 #include "../include/memoryDriver.h"
-#define INITIAL_POSITION 0x1000000
-#define MAX_POSITION 0x2000000
+
 
 
 typedef struct memoryNode {
@@ -23,16 +22,25 @@ static char* infoTotalMessage = "La memoria total es: ";
 static char* infoLibreMessage = ", la memoria libre es: ";
 static char* infoOcupadaMessage = ", la memoria ocupada es: ";
 
-void* mallocFun(uint64_t nbytes) {
+static uint64_t  initialPosition;
+static uint64_t  maxPosition;
+
+void initMemManager(uint64_t heapInitialPosition,uint64_t maxSizeHeap){
+    initialPosition=heapInitialPosition;
+    maxPosition=maxSizeHeap+heapInitialPosition;
     if (firstNode == NULL) {
 
-        firstNode =(MemoryNodePtr) INITIAL_POSITION;
-        firstNode->freeSpace = MAX_POSITION - INITIAL_POSITION - sizeof(MemoryNode);
+        firstNode =(MemoryNodePtr) initialPosition;
+        firstNode->freeSpace = maxPosition - initialPosition - sizeof(MemoryNode);
         firstNode->totalSpace = firstNode->freeSpace;
         firstNode->prevNode = NULL;
         firstNode->nextNode = NULL;
         firstNode->startingPointerDir =(uint64_t) firstNode + sizeof(MemoryNode);
     }
+}
+
+void* mallocFun(uint64_t nbytes) {
+    
 
     MemoryNodePtr currentNode = firstNode;
     while (nbytes > currentNode->freeSpace - sizeof(MemoryNode) && currentNode != NULL) {
@@ -93,7 +101,7 @@ void consult(char* buf) {
     MemoryNodePtr currentNode=firstNode;
     long freeMemory = 0;
     long occupiedMemory;
-    long totalMemory = MAX_POSITION - INITIAL_POSITION;
+    long totalMemory = maxPosition - initialPosition;
     // Counting the node struct as occupied memory
     while (currentNode != NULL) {
         freeMemory += currentNode->freeSpace;

@@ -8,7 +8,7 @@
 #include <scheduler.h>
 #include <interrupts.h>
 #include <exceptions.h>
-
+#include <memoryDriver.h>
 extern uint8_t text;
 extern uint8_t rodata;
 extern uint8_t data;
@@ -20,7 +20,8 @@ static const uint64_t PageSize = 0x1000;
 
 static void * const sampleCodeModuleAddress = (void*)0x400000;
 static void * const sampleDataModuleAddress = (void*)0x500000;
-
+static void * const heapModuleAdress =(void*) 0x600000;
+static void * const maxSize =(void*) 0x100000;
 typedef int (*EntryPoint)();
 
 
@@ -61,12 +62,14 @@ void * initializeKernelBinary()
 
 int main()
 {		
-	setExceptionRebootPoint((uint64_t)sampleCodeModuleAddress, getStack());
-	ncInitVideoConsole();
-	//((EntryPoint)sampleCodeModuleAddress)();
-	initializeScheduler("");
-	createProcess(sampleCodeModuleAddress,"shell",1,"shell");
+	//setExceptionRebootPoint((uint64_t)sampleCodeModuleAddress, getStack());
 	load_idt();
-
+	ncInitVideoConsole();
+	initMemManager(heapModuleAdress,maxSize);
+	initializeScheduler();
+	createProcess(sampleCodeModuleAddress,NULL,1,"shell");
+	ncPrint("Hola como estas");
+	
+	
 	return 0;
 }

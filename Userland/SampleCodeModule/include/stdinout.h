@@ -45,6 +45,9 @@ extern int postSem(char* semaphore);
 extern int createPipe(int pipeFd[2]);
 extern void openPipe(void *ptr);
 extern void getPipes();
+extern int getPidSys();
+
+
 
 void print(char * string);
 int strlength(char * string);
@@ -66,8 +69,8 @@ int atoi(char * s);
 int atoi_base(const char *str, int str_base);
 char intToChar(unsigned int num);
 int split(char * buf,char c,char * target[]);
-long secondsElapsed();
 int ticks();
+long secondsElapsed();
 int strcat(char * target, char * source);
 int numToStr(int num, char* str, int base);
 uint64_t uintToBase(uint64_t value, char *buffer, uint64_t base);

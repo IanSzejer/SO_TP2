@@ -62,7 +62,7 @@ GLOBAL openPipe
 
 GLOBAL getPipes
 
-GLOBAL getPid
+GLOBAL getPidSys
 
 %macro pushStateSysCall 0
 	push rbx
@@ -293,5 +293,5 @@ openPipe:
 getPipes:
     sysCall 30
 
-getPid:
+getPidSys:
     sysCall 31

@@ -1,5 +1,5 @@
 #include "../include/phylo.h"
-
+#include "../include/shell.h"
 #define MAX_PHYL 15
 #define MIN_PHYL 2 
 #define INIT_PHYL 5
@@ -41,11 +41,12 @@ int right(int pIndex);
 
 void phylo(int argc, char** argv){
     print("Bienvenido a PHYLO \n");
-    if((sem = openSemaphore(SEM_PHYL,1)) == -1){
+    if(openSemaphore(SEM_PHYL,1) == -1){
         print("Error abriendo semaforo\n");
         return;
         
     }
+    sem = SEM_PHYL;
 
     seated = 0;
     for (int i=0; i<INIT_PHYL; i++ ){
@@ -130,7 +131,7 @@ void takeChopstick(int pIndex)
     phylos[pIndex].state = WAIT;
     update(pIndex);
     postSem(sem);
-    waitSem(phylos[pIndex].semIndex);
+    waitSem(phylos[pIndex].semName);
 }
 
 void putChopstick(int pIndex)
@@ -158,7 +159,7 @@ void update(int pIndex)
     {
         phylos[pIndex].state = EAT;
         printState();
-        postSem(phylos[pIndex].semIndex);
+        postSem(phylos[pIndex].semName);
     }
 }
 

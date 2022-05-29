@@ -10,6 +10,7 @@
 
 #include <idtLoader.h>
 #include <stdint.h>
+#include <scheduler.h>
 
 void _irq00Handler(void);
 void _irq01Handler(void);

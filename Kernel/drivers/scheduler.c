@@ -2,6 +2,7 @@
 #include "../include/memoryDriverPropio.h"
 #include "../include/scheduler.h"
 #include "interrupts.h"
+#include "videoD.h"
 #define MAX_SIZE 200
 #define FIRST_PID 1
 #define PROCESS_SIZE 10000 // El stack del proceso sera de 10000 bits
@@ -304,7 +305,9 @@ void* createContext(void* stack, uint64_t* arguments, void* (*funcion)(void*), i
     return &stackStruct->rax;
 }
 
-void* tickInterrupt() {
+void* tickInterrupt(void* rsp) {
+    ncPrint("int");
+    currentProcess->pcb.rsp=rsp;        //Guardo el rsp para el contexto
     if (currentProcess != NULL) {
         tickCountScheduler++;
         if (tickCountScheduler > 18 - 2*currentProcess->priority) {
