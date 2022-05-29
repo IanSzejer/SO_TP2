@@ -1,6 +1,6 @@
 #include "../include/lib.h"
 #include "../include/memoryDriver.h"
-
+#include "../include/videoD.h"
 
 
 typedef struct memoryNode {
@@ -37,14 +37,19 @@ void initMemManager(uint64_t heapInitialPosition,uint64_t maxSizeHeap){
         firstNode->nextNode = NULL;
         firstNode->startingPointerDir =(uint64_t) firstNode + sizeof(MemoryNode);
     }
+    
+}
+
+uint64_t spaceOrCero(uint64_t free,uint64_t size){
+    if(free<=size)
+        return 0;
+    return free-size;
 }
 
 void* mallocFun(uint64_t nbytes) {
-    
 
     MemoryNodePtr currentNode = firstNode;
-    while (nbytes > currentNode->freeSpace - sizeof(MemoryNode) && currentNode != NULL) {
-
+    while (currentNode != NULL && nbytes > spaceOrCero(currentNode->freeSpace,sizeof(MemoryNode))) {
         currentNode = currentNode->nextNode;
     }
     if (currentNode == NULL) { // Significa que no hay espacio libre suficiente
@@ -62,13 +67,12 @@ void* mallocFun(uint64_t nbytes) {
     currentNode->nextNode = newNode;
     if (newNode->nextNode != NULL)
         newNode->nextNode->prevNode = newNode; // Conecto el previous del siguiente nodo al new Node
-
     newNode->totalSpace = currentNode->freeSpace - sizeof(MemoryNode);
     newNode->freeSpace = newNode->totalSpace - nbytes;
 
     currentNode->totalSpace -= currentNode->freeSpace; // Le decremento el espacio robado al current
     currentNode->freeSpace = 0;
-
+    
     newNode->startingPointerDir =(uint64_t) newNode + sizeof(MemoryNode);
     return (void*) newNode->startingPointerDir;
 }
@@ -104,6 +108,7 @@ void consult(char* buf) {
     long totalMemory = maxPosition - initialPosition;
     // Counting the node struct as occupied memory
     while (currentNode != NULL) {
+        
         freeMemory += currentNode->freeSpace;
         currentNode = currentNode->nextNode;
     }

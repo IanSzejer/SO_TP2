@@ -21,7 +21,7 @@ static const uint64_t PageSize = 0x1000;
 static void * const sampleCodeModuleAddress = (void*)0x400000;
 static void * const sampleDataModuleAddress = (void*)0x500000;
 static void * const heapModuleAdress =(void*) 0x600000;
-static void * const maxSize =(void*) 0x100000;
+static void * const maxSize =(void*) 0x10000;
 typedef int (*EntryPoint)();
 
 
@@ -63,13 +63,14 @@ void * initializeKernelBinary()
 int main()
 {		
 	//setExceptionRebootPoint((uint64_t)sampleCodeModuleAddress, getStack());
-	load_idt();
+	
 	ncInitVideoConsole();
 	initMemManager(heapModuleAdress,maxSize);
-	initializeScheduler();
-	createProcess(sampleCodeModuleAddress,NULL,1,"shell");
-	ncPrint("Hola como estas");
-	
+	ncClear();
+	initializeScheduler(sampleCodeModuleAddress);	
+	//((EntryPoint)sampleCodeModuleAddress)();
+	//createProcess(sampleCodeModuleAddress,NULL,1,"shell");
+	load_idt();
 	
 	return 0;
 }

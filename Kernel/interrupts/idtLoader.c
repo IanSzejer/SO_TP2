@@ -31,11 +31,11 @@ void load_idt() {
   setup_IDT_entry(0x80, (uint64_t)&_sysCallHandlerMaster);
   setup_IDT_entry(0x00, (uint64_t)&_exception00Handler); // Handler para division por cero.
   setup_IDT_entry(0x06, (uint64_t)&_exception06Handler); // Handler para operación inválida.
-
+  
 
 	picMasterMask(0xFC); // irq00 => timer tick (int 20) e irq01 => teclado (int 21) 
 	picSlaveMask(0xFF);
-
+  
 	_sti();
 }
 

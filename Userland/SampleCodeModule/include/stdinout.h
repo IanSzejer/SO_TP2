@@ -46,6 +46,7 @@ extern int createPipe(int pipeFd[2]);
 extern void openPipe(void *ptr);
 extern void getPipes();
 extern int getPidSys();
+extern int dup2(uint64_t oldFd,uint64_t newFd);
 
 
 

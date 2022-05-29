@@ -3,6 +3,7 @@
 #include "../include/scheduler.h"
 #include "interrupts.h"
 #include "videoD.h"
+#include "../include/time.h"
 #define MAX_SIZE 200
 #define FIRST_PID 1
 #define PROCESS_SIZE 10000 // El stack del proceso sera de 10000 bits
@@ -49,10 +50,9 @@ void dummy(){
     _hlt();
 }
 
-void initializeScheduler() {
-    //createProcess((void*(*)(void*))&dummy,"dummy",1,"dummy");
-    //changeState(dummyProcess->pcb.pid,BLOCKED);
-    
+void initializeScheduler(void* (*funcion)(void*)) {
+    createProcess(funcion,NULL,0,"shell");
+    currentProcess=firstList->first;   
 }
 // Como argumento recibe un puntero a funcion, como es un proceso no se que parametros recibe
 // Por ahora digo que devuelve void*, por decreto recibe hasta 3 argumentos de tamaño uint64_t
@@ -82,6 +82,8 @@ uint64_t createProcess(void* (*funcion)(void*), void* argv, int argc,char* proce
     // asignar prioridad
     return newProcess->pcb.pid;
 }
+
+
 
 static int strlength(char* text){
     int i=0;
@@ -137,7 +139,6 @@ void addProcess(ProcessNode* nodeToAdd) {
     if (nodeToAdd == NULL) {
         return;
     }
-
     firstList = recursiveAddList(nodeToAdd, firstList);
 }
 
@@ -307,7 +308,8 @@ void* createContext(void* stack, uint64_t* arguments, void* (*funcion)(void*), i
 
 void* tickInterrupt(void* rsp) {
     ncPrint("int");
-    currentProcess->pcb.rsp=rsp;        //Guardo el rsp para el contexto
+    if (currentProcess!=NULL)
+        currentProcess->pcb.rsp=rsp;        //Guardo el rsp para el contexto
     if (currentProcess != NULL) {
         tickCountScheduler++;
         if (tickCountScheduler > 18 - 2*currentProcess->priority) {
@@ -503,4 +505,12 @@ void addPipe(uint64_t fd[2], uint64_t pid, uint64_t pipeReadRef, uint64_t pipeWr
 
 uint64_t getFdRef(uint64_t fd){
     return currentProcess->pcb.fd[fd].reference;
+}
+
+//Copio la referencia de fdOld a fdNew si es que existen, sino retorno -1
+int dup(uint64_t fdOld,uint64_t fdNew){
+    if(currentProcess->pcb.fd[fdOld].fd==11 || currentProcess->pcb.fd[fdNew].fd==11 )
+        return -1;
+    currentProcess->pcb.fd[fdNew].reference=currentProcess->pcb.fd[fdOld].reference;
+    return 0;
 }

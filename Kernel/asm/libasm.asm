@@ -197,7 +197,7 @@ _xchg:
 ; 	ret
 
 section .bss
-ptr resq 1
+;ptr resq 1
 
 size resd 1
 

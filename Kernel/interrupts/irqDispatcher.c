@@ -8,8 +8,8 @@
 
 typedef void (*IRQHandlerR)(uint64_t rsp);
 
-static void int_20();
-static void int_21(uint64_t *);
+static void int_20(uint64_t *stack);
+static void int_21(uint64_t *stack);
 static IRQHandlerR handlers[8] = {(IRQHandlerR)&int_20, (IRQHandlerR)&int_21};
 
 void irqDispatcher(uint64_t irq, uint64_t rsp)
@@ -20,14 +20,15 @@ void irqDispatcher(uint64_t irq, uint64_t rsp)
 		irqHandler(rsp);
 }
 
-void int_20()
+void int_20(uint64_t *stack)
 {
-	ncPrint("Timer Handlder");
+	
 	timer_handler();
 	
 }
 
 void int_21(uint64_t *stack)
 {
+	
 	keyboardDriver(stack);
 }

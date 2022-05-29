@@ -6,7 +6,6 @@ void (*routine)() = 0;
 
 void timer_handler() {
 	ticks++;
-	handler();
 }
 
 void set_routine(void (*f)()) {

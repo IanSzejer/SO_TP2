@@ -64,6 +64,8 @@ GLOBAL getPipes
 
 GLOBAL getPidSys
 
+GLOBAL dup2
+
 %macro pushStateSysCall 0
 	push rbx
 	push rcx
@@ -295,3 +297,6 @@ getPipes:
 
 getPidSys:
     sysCall 31
+
+dup2:
+    sysCall 32
