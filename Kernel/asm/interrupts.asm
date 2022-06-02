@@ -23,6 +23,7 @@ EXTERN exceptionDispatcher
 
 EXTERN sysCallDispatcher
 EXTERN tickInterrupt
+EXTERN dummyinterrupt
 SECTION .text
 
 %macro pushState 0
@@ -216,16 +217,30 @@ picSlaveMask:
 
 ;8254 Timer (Timer Tick)
 _irq00Handler:
+	;pushStateExtra
+
+	;mov rdi,0
+	;mov rsi,rsp
+	;call irqDispatcher
+	;mov rdi, rsp
+	;call dummyinterrupt
+	;mov rsp, rax
+	;mov al, 20h
+	;out 20h, al
+
+	;popStateExtra
+	;iretq
+
 	pushStateExtra
 
-	mov rdi,0
-	mov rsi,rsp
-	call irqDispatcher
 	mov rdi, rsp
-	call tickInterrupt
-	mov rsp, rax
+
+	;dummyinterrupt
 	mov al, 20h
 	out 20h, al
+	;sendEndOfInterrupt
+
+	mov rsp, rax
 
 	popStateExtra
 	iretq

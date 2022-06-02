@@ -323,6 +323,11 @@ void* tickInterrupt(void* rsp) {
         return currentProcess->pcb.rsp;
 }
 
+void* dummyinterrupt(void* rsp){
+    timer_handler();
+    return rsp;
+}
+
 void changePriority(uint64_t pid, uint64_t newPriority) {
     ProcessNode* current=findNode(pid);
 

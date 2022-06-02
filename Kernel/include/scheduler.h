@@ -108,5 +108,6 @@ ProcessNode *listAllProcess(char* buf);
 uint64_t getPid();
 uint64_t getFdRef(uint64_t fd);
 int dup(uint64_t fdOld,uint64_t fdNew);
+void* dummyinterrupt(void* rsp);        //Dummy para probar
 
 #endif
