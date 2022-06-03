@@ -64,12 +64,12 @@ int main()
 {		
 	//setExceptionRebootPoint((uint64_t)sampleCodeModuleAddress, getStack());
 	
-	//ncInitVideoConsole();
-	//initMemManager(heapModuleAdress,maxSize);
-	//ncClear();
-	//initializeScheduler(sampleCodeModuleAddress);	
+	ncInitVideoConsole();
+	initMemManager(heapModuleAdress,maxSize);
+	ncClear();
+	initializeScheduler(sampleCodeModuleAddress);	
 	//((EntryPoint)sampleCodeModuleAddress)();
-	//createProcess(sampleCodeModuleAddress,NULL,1,"shell");
+	createProcess(sampleCodeModuleAddress,NULL,1,"shell");
 	load_idt();
 	
 	return 0;

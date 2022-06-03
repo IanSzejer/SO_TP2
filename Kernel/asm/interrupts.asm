@@ -235,12 +235,12 @@ _irq00Handler:
 
 	mov rdi, rsp
 
-	;dummyinterrupt
+	call tickInterrupt
 	mov al, 20h
 	out 20h, al
 	;sendEndOfInterrupt
 
-	;mov rsp, rax
+	mov rsp, rax
 
 	popStateExtra
 	iretq

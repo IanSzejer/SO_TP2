@@ -307,7 +307,8 @@ void* createContext(void* stack, uint64_t* arguments, void* (*funcion)(void*), i
 }
 
 void* tickInterrupt(void* rsp) {
-    ncPrint("int");
+    //ncPrint("int");
+    timer_handler();
     if (currentProcess!=NULL)
         currentProcess->pcb.rsp=rsp;        //Guardo el rsp para el contexto
     if (currentProcess != NULL) {
