@@ -240,7 +240,7 @@ _irq00Handler:
 	out 20h, al
 	;sendEndOfInterrupt
 
-	mov rsp, rax
+	;mov rsp, rax
 
 	popStateExtra
 	iretq
