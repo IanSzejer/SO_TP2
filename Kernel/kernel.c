@@ -67,10 +67,12 @@ int main()
 	ncInitVideoConsole();
 	initMemManager(heapModuleAdress,maxSize);
 	ncClear();
+	
 	initializeScheduler(sampleCodeModuleAddress);	
 	//((EntryPoint)sampleCodeModuleAddress)();
-	createProcess(sampleCodeModuleAddress,NULL,1,"shell");
 	load_idt();
-	
+	while(1){
+		
+	}
 	return 0;
 }

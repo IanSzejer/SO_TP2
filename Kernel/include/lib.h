@@ -60,4 +60,6 @@ extern uint64_t * getStack();
 int strcmp(char *X, char *Y);
 uint64_t strlen(char* text,uint64_t size);
 
+uint64_t createContext(uint64_t stack,void* (*funcion)(void*),uint32_t argc,char arguments[6][21]);
+
 #endif

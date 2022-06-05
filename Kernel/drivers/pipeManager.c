@@ -129,34 +129,32 @@ static void readFromBuffer(Pipe* pipe,uint64_t pid,uint64_t size,char* text){
     text += amountCopied/(sizeof(char));    //Lo aumento el tamaño copiado en chars
     size-=amountCopied;
     pipe->bufferWriten-=amountCopied;
+    pipe->readPointer+=amountCopied;
     if(pipe->readPointer==pipe->bufferEnd ) //Debo volver al inicio del array si no esta lleno
         pipe->readPointer=pipe->bufferInit;
-    else
-        pipe->readPointer+=amountCopied;
     pipe->writen=0;
-    if(pipe->bufferWriten == 0){
+    /*if(pipe->bufferWriten == 0){  Comentado ya que si pudo leer 30 aunque su maximo era 50 ya debe terminar
         if(size>0){
             addReadingUser(pipe, size, text,pid);         //Lo pongo en la cola de espera
             startWriting(pipe);
             return;
         }
-    }
+    }*/
     if(size==0){
         startWriting(pipe);    
         return;
     }
-
+    if(pipe->bufferWriten == 0){
+        startWriting(pipe);
+        return;
+    }
     memcpy(text,pipe->readPointer, min(size,pipe->bufferWriten));
     amountCopied =  min(size,pipe->bufferWriten);
-    size-=amountCopied;
+    //size-=amountCopied;
     pipe->bufferWriten-=amountCopied; 
     pipe->readPointer += amountCopied;
-    if(size==0){
-        startWriting(pipe);    
-        return;
-    }
-    text += amountCopied/(sizeof(char));    //Lo aumento el tamaño copiado en chars
-    addReadingUser(pipe, size, text,pid);
+    //text += amountCopied/(sizeof(char));    //Lo aumento el tamaño copiado en chars
+    //addReadingUser(pipe, size, text,pid);   //NO es necesario q se llene lo que pidio
     startWriting(pipe);
 }
 
