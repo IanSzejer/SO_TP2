@@ -17,7 +17,7 @@ typedef struct
 } t_shellc;
 
 int cmdIndex(char *buf,char args[6][21]);
-void loadCommand(void (*f)(), char *name, char *desc,int argAmount);
+void loadCommand(void *(*f)(void *), char *name, char *desc,int argAmount);
 void copyOneLineUp(shell_line shellBuffer[SHELLH]);
 void copyCommandDescriptor(char *buf, t_shellc cmd);
 void copyLinesToShellOutput(char lines[][SHELLW], int qty);
@@ -276,9 +276,9 @@ void loop(char seconds){
 }
 
 
-void loadCommand(void (*f)(), char *name, char *desc,int argAmount)
+void loadCommand(void *(*f)(void *), char *name, char *desc,int argAmount)
 {
-    shellCommands[cmdCounter].shellf = &f;
+    shellCommands[cmdCounter].shellf = f;
     shellCommands[cmdCounter].name = name;
     shellCommands[cmdCounter].description = desc;
     shellCommands[cmdCounter].argAmount= argAmount;
