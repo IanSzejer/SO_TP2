@@ -1,7 +1,7 @@
 #include "shell.h"
 #include "stdinout.h"
 #include <phylo.h>
-
+#define SHELL_BUFFER_SIZE 128
 typedef struct
 {
     char line[SHELLW];
@@ -10,14 +10,14 @@ typedef struct
 
 typedef struct
 {
-    void (*shellf)();
+    void* (*shellf)(void*);
     char *name;
     char *description;
+    int argAmount;
 } t_shellc;
 
-int cmdIndex(char *buf);
-void processCommands(char *buf, shell_line shellBuffer[SHELLH], int lines);
-void loadCommand(void (*f)(), char *name, char *desc);
+int cmdIndex(char *buf,char args[6][21]);
+void loadCommand(void (*f)(), char *name, char *desc,int argAmount);
 void copyOneLineUp(shell_line shellBuffer[SHELLH]);
 void copyCommandDescriptor(char *buf, t_shellc cmd);
 void copyLinesToShellOutput(char lines[][SHELLW], int qty);
@@ -203,23 +203,23 @@ void copyLinesToShellOutput(char lines[][SHELLW], int qty)
 
 void setupShellCommands()
 {
-    loadCommand(&printDateTime, "datetime", "Displays the date and time");
-    loadCommand(&help, "help", "Shows a list of available commands");
-    loadCommand(&inforeg, "inforeg", "Shows the value of all registers");
-    loadCommand(&printmem, "printmem", "Prints 32 bytes of memory from arg. address");
-    loadCommand(&divideByZero, "exception0", "Executes rutine that generates \"division by zero\" exception");
-    loadCommand(&invalidOpCode, "exception6", "Executes rutine that generates \"invalid op. code\" exception");
-    loadCommand((void (*)())&loop,"loop","prints a message with a delay inputed by user");
-    loadCommand(&cat,"cat", "prints what its received");
-    loadCommand(&wc,"wc", "counts the amount of lines inputed ");
-    loadCommand(&filter,"filter", "prints what its received,excluding vocals");
-    loadCommand(&phylo,"philosophers","philosopher problem");
-    loadCommand(&memState,"mem","see memory status");
-    loadCommand(&kill,"kill","kill a process");
-    loadCommand((void (*)())&nice,"nice","change a process priority");
-    loadCommand(&changeState,"block","block a process");
-    loadCommand(&getPipes,"pipe","see pipes status");
-    loadCommand(&getAllProcesses,"ps","see processes status");
+    loadCommand((void (*)(void*))&printDateTime, "datetime", "Displays the date and time",0);
+    loadCommand((void (*)(void*))&help, "help", "Shows a list of available commands",0);
+    loadCommand((void (*)(void*))&inforeg, "inforeg", "Shows the value of all registers",0);
+    loadCommand((void (*)(void*))&printmem, "printmem", "Prints 32 bytes of memory from arg. address",0);
+    loadCommand((void (*)(void*))&divideByZero, "exception0", "Executes rutine that generates \"division by zero\" exception",0);
+    loadCommand((void (*)(void*))&invalidOpCode, "exception6", "Executes rutine that generates \"invalid op. code\" exception",0);
+    loadCommand((void (*)(void*))&loop,"loop","prints a message with a delay inputed by user",1);
+    loadCommand((void (*)(void*))&cat,"cat", "prints what its received",0);
+    loadCommand((void (*)(void*))&wc,"wc", "counts the amount of lines inputed ",0);
+    loadCommand((void (*)(void*))&filter,"filter", "prints what its received,excluding vocals",0);
+    loadCommand((void (*)(void*))&phylo,"philosophers","philosopher problem",0);
+    loadCommand((void (*)(void*))&memState,"mem","see memory status",0);
+    loadCommand((void (*)(void*))&kill,"kill","kill a process",1);
+    loadCommand((void (*)())&nice,"nice","change a process priority",2);
+    loadCommand((void (*)(void*))&changeState,"block","block a process",1);
+    loadCommand((void (*)(void*))&getPipes,"pipe","see pipes status",0);
+    loadCommand((void (*)(void*))&getAllProcesses,"ps","see processes status",0);
 
 }
 
@@ -269,35 +269,15 @@ void loop(char seconds){
 }
 
 
-void loadCommand(void (*f)(), char *name, char *desc)
+void loadCommand(void (*f)(), char *name, char *desc,int argAmount)
 {
     shellCommands[cmdCounter].shellf = f;
     shellCommands[cmdCounter].name = name;
     shellCommands[cmdCounter].description = desc;
+    shellCommands[cmdCounter].argAmount= argAmount;
     cmdCounter++;
 }
 
-void processCommands(char *buf, shell_line shellBuffer[SHELLH], int lines)
-{
-    for (int i = 1; i < SHELLH; i++)
-    {
-        strcpy(shellBuffer[i - 1].line, shellBuffer[i].line);
-        shellBuffer[i - 1].isCmd = shellBuffer[i].isCmd;
-    }
-
-    strcpy(shellBuffer[SHELLH - 1].line, buf);
-    shellBuffer[SHELLH - 1].isCmd = 1;
-    char *splitted[8] = {0};
-    split(buf, ' ', splitted);
-    int idx = cmdIndex(splitted[0]);
-    buf[0] = 0;
-    if (idx < 0)
-    {
-        updateConsoleMsg("Comando invalido");
-        return;
-    }
-    shellCommands[idx].shellf(splitted[1], splitted[2]);
-}
 
 void cleanBuffers()
 {
@@ -308,42 +288,8 @@ void cleanBuffers()
     consoleMsg1[0] = consoleMsg2[0] = 0;
 }
 
-void manageConsole(shell_line bufferIn[SHELLH], char *buf, int *bufSize, char *consoleMsgC, int bufferLines)
-{
-    consoleMsg = consoleMsgC;
-    console_clear();
-    printShell(buf, bufferIn);
-    if (readInput(buf, bufSize, SHELL_MSG, GREEN, 30))
-    {
-        return;
-    }
-    flag = 1;
-    processCommands(buf, bufferIn, bufferLines);
-    // console_clear();
-    // printShell(bufferIn);
-}
 
-int theShell()
-{
-    cleanBuffers();
-    setupShellCommands();
-    // set_kb_target(&kb);
-    console_clear();
-    split_screen(2, 0);
-    while (1)
-    {
-        set_screen(currentShell);
-        switch (currentShell)
-        {
-        case 0:
-            manageConsole(shellBuffer1, buffer1, &buf1Size, consoleMsg1, buffer1Lines);
-            break;
-        case 1:
-            manageConsole(shellBuffer2, buffer2, &buf2Size, consoleMsg2, buffer2Lines);
-            break;
-        }
-    }
-}
+
 
 int readInput(char *buffer, int *size, char *def, char color, int maxSize)
 {
@@ -386,13 +332,48 @@ int readInput(char *buffer, int *size, char *def, char color, int maxSize)
 }
 
 // retorna -1 si el buffer no tiene ningun comando valido
-int cmdIndex(char *buf)
+int cmdIndex(char *buf,char args[6][21])
 {
+    int spaceIndex=0;
+    int i=0;
+    char command[SHELL_BUFFER_SIZE];
+    while(*(buf+i)!='\0' && !spaceIndex){      //Me fijo si hay espacios que separan la funcion de sus argumentos
+        if(*(buf+i)==' '){
+            spaceIndex=1;
+        }else{
+            command[i++]=*(buf+i);        //Copio el comando hasta el espacio
+        }
+    }
+    command[i]='\0';
+    int argsRead=0;
+    int ceroFound=0;
+    if(*(buf+i)!='\0'){
+        for(int j=0;j<6 && !ceroFound ;j++){          //Copio los args
+            i++;
+            if(*(buf+i)!='\0' && *(buf+i)!=' '){
+                argsRead++;     //Aumento la cantidad de argumentos leidos
+                int k=0;
+                while(k<21-1 && *(buf+i)!='\0' && *(buf+i)!=' '){
+                    args[j][k]=*(buf+i);
+                    i++;
+                    k++;
+                }
+                if(*(buf+i)=='\0')
+                    ceroFound=1;
+                args[j][k]='\0';
+                
 
+            }
+        }
+    }
+    
     for (int i = 0; i < cmdCounter; i++)
     {
-        if (strcmp(buf, shellCommands[i].name) == 0)
+        if (strcmp(command, shellCommands[i].name) == 0){
+            if(argsRead!=shellCommands[i].argAmount)
+                return -2;
             return i;
+        }
     }
     return -1;
 }
@@ -404,4 +385,42 @@ void sleep(int seconds)
     int finalTime = seconds + _secondsElapsed;
     while (secondsElapsed() <= finalTime)
         ;
+}
+
+
+
+
+
+int theShell(){
+    setupShellCommands();
+    print("Bienvenido! \n");
+    print("Por favor ingrese su usuario: ");
+    char username[SHELL_BUFFER_SIZE] = {0};
+    scanf(username);
+    print("Para mas informacion escriba 'help'.");
+    int i=0;
+    char choose[SHELL_BUFFER_SIZE] = {0};
+    while(i==0){
+        print("\n>>");
+        print(username);
+        print(":");
+        scanf(choose);
+        char args[6][21];
+        int verify = cmdIndex(choose,args);
+        while(verify<0){
+                if(verify==-1){
+                    print("Comando incorrecto");
+                }else{
+                    print("Cantidad de argumentos incorrectos");
+                }
+                print("Por favor vuelva a intentarlo \n");
+                print(">>");
+                print(username);
+                print(":");
+                scanf(choose);
+                verify = cmdIndex(choose,args);
+        }
+        newProcess(shellCommands[verify].shellf,args,shellCommands[verify].argAmount,shellCommands[verify].name);       //DEvuelve el pid
+    }
+    return 1;
 }

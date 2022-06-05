@@ -75,4 +75,5 @@ long secondsElapsed();
 int strcat(char * target, char * source);
 int numToStr(int num, char* str, int base);
 uint64_t uintToBase(uint64_t value, char *buffer, uint64_t base);
+void scanf(char* buf);
 #endif

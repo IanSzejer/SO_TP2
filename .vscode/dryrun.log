@@ -1,4 +1,8 @@
-make.exe --dry-run --always-make --keep-going --print-directory
-'make.exe' is not recognized as an internal or external command,
-operable program or batch file.
-
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/home/ianlucklol3/SO_TP2'
+cd Bootloader; make all
+cd Kernel; make all
+cd Userland; make all
+cd Image; make all
+make: Leaving directory '/home/ianlucklol3/SO_TP2'
+ 
