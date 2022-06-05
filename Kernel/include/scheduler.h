@@ -63,7 +63,6 @@ typedef struct pcb_t
     uint64_t ppid; // parent pid
     void* rsp;
     void* rbp;
-    uint64_t priority;
     uint64_t tickets;
     uint64_t* argv;
     states state;
