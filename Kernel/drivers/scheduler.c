@@ -149,7 +149,7 @@ static ProcessList* recursiveAddList(ProcessNode* nodeToAdd, ProcessList* list) 
         list->nextList = recursiveAddList(nodeToAdd, list->nextList);
     } else {
         ProcessList* newList = createList(nodeToAdd, nodeToAdd->priority);
-        newList->nextList = list->nextList;
+        newList->nextList = list;
         checkReady(nodeToAdd, newList);
         return newList;
     }
@@ -202,7 +202,7 @@ static ProcessNode* removeRecursiveNode(ProcessNode* node, ProcessNode* node2, P
         freeFun(node);              //Libero el espacio reservado para el nodo
         list->size--;
         return aux;
-    } else if (node->pcb.priority > node2->pcb.priority) {
+    } else if (node->priority > node2->priority) {
         return node;
     }
     node->next = removeRecursiveNode(node->next, node2, list);
@@ -336,6 +336,8 @@ void changePriority(uint64_t pid, uint64_t newPriority) {
     //como desaparecio de la lista pero no fue eliminado puedo acceder a current
     //le cambio la prioridad y lo agrego a la lista
     current->priority = newPriority;
+    current->next=NULL;
+    
     addProcess(current);
     
 }
@@ -346,6 +348,7 @@ static ProcessList* change(ProcessList* list, ProcessNode* process) {
     // si encontre la lista
     if (list->priority == process->priority) {
         list->first = changeNode(list->first, process, list);
+        return list;
     } else if (list->priority > process->priority) {
         return list;
     }
@@ -362,9 +365,14 @@ static ProcessNode* changeNode(ProcessNode* node, ProcessNode* node2, ProcessLis
     }
 
     if (node->pcb.pid == node2->pcb.pid) {
+        if(node->pcb.state==READY){
+            ready--;
+            list->ready--;
+        }
+        list->size--;
         //si lo encontre "lo salteo" -> hago q apunten al next y desaparezco de la lista
         return node->next;
-    } else if (node->pcb.priority > node2->pcb.priority) {
+    } else if (node->priority > node2->priority) {
         return node;
     }
 

@@ -37,7 +37,6 @@ typedef struct pcb_t
     void* rsp;
     void* rbp;
     void* processStartingMem;
-    uint64_t priority;
     uint64_t tickets;
     char argv[6][21];
     states state;
