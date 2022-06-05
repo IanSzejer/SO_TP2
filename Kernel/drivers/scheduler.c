@@ -6,13 +6,13 @@
 #include "../include/time.h"
 #define MAX_SIZE 200
 #define FIRST_PID 1
-#define PROCESS_SIZE 10000 // El stack del proceso sera de 10000 bits
+#define PROCESS_MEM_SIZE 10000 // El stack del proceso sera de 10000 bits
 #define BASE_PRIORITY 1
 
 static int ready;
-static ProcessList* firstList;
-static ProcessNode* currentProcess;
-static ProcessNode* dummyProcess;
+static ProcessList* firstList=NULL;
+static ProcessNode* currentProcess=NULL;
+static ProcessNode* dummyProcess=NULL;
 static uint64_t pidCounter = 1;
 int tickCountScheduler;
 static int strlength(char* text);
@@ -51,22 +51,36 @@ void dummy(){
 }
 
 void initializeScheduler(void* (*funcion)(void*)) {
+    _cli();
     createProcess(funcion,NULL,0,"shell");
-    currentProcess=firstList->first;   
+    _sti();
 }
 // Como argumento recibe un puntero a funcion, como es un proceso no se que parametros recibe
 // Por ahora digo que devuelve void*, por decreto recibe hasta 3 argumentos de tamaño uint64_t
-uint64_t createProcess(void* (*funcion)(void*), void* argv, int argc,char* processName) {
-    uint64_t* arguments = mallocFun(3 * sizeof(uint64_t));
-    memcpy(arguments, argv, 3 * sizeof(uint64_t));
-    void* stack = mallocFun(PROCESS_SIZE);
-    void* stackTopPtr = createContext(stack, arguments, funcion, argc);
-    ProcessNode* newProcess = mallocFun(sizeof(ProcessNode));
-    newProcess->pcb.rbp=stack;
+uint64_t createProcess(void* (*funcion)(void*), char* argv, int argc,char* processName) {
+    int c=0,j=0;
+    char arguments[6][21];
+    while(c < argc){
+        int k=0;
+        while(argv[j]){
+            arguments[c][k]=argv[j];
+            k++;
+            j++;
+        }
+        arguments[c][k] = 0;
+        c+=2;
+    }
+    void* stack = mallocFun(PROCESS_MEM_SIZE);
+    
+    void* stackTopPtr =(void*) createContext((uint64_t)stack + PROCESS_MEM_SIZE, funcion, argc, arguments);
+    
+    ProcessNode* newProcess =(ProcessNode*) mallocFun(sizeof(ProcessNode));
+    newProcess->pcb.rbp=stack+PROCESS_MEM_SIZE-1;
     memcpy(newProcess->pcb.name,processName,strlength(processName)*sizeof(char));
     newProcess->priority = BASE_PRIORITY;
     newProcess->pcb.pid = getNewPid();
-    newProcess->pcb.rsp = stackTopPtr; // Aca se tiene que empezar a popear, no estoy seguro
+    newProcess->pcb.rsp = stackTopPtr; 
+    newProcess->pcb.processStartingMem= stack;
     newProcess->pcb.state = READY;
     newProcess->pcb.context=BACKGROUND; //Arranca en back siempre
     newProcess->pcb.fd[0].fd = 0;
@@ -75,15 +89,20 @@ uint64_t createProcess(void* (*funcion)(void*), void* argv, int argc,char* proce
     newProcess->pcb.fd[1].reference = STDOUT;
     newProcess->pcb.fd[2].fd = 2;
     newProcess->pcb.fd[2].reference = STDERR;
-    newProcess->pcb.argv=arguments;
-    newProcess->next=NULL;
+    for (int i = 0; i < argc; i++)  //Copio los argumentos
+      memcpy(newProcess->pcb.argv[i], arguments[i],strlength(arguments[i])*sizeof(char));
     initiateFd(newProcess);
     // faltan cosas del pcb pero queria verlo con ustedes
     addProcess(newProcess);
     // asignar prioridad
     return newProcess->pcb.pid;
 }
-
+/*  
+--->
+c
+    n
+ --> a
+*/
 
 
 static int strlength(char* text){
@@ -108,7 +127,8 @@ static ProcessList* createList(ProcessNode* nodeToAdd, uint64_t priority) {
 static void checkReady(ProcessNode* node, ProcessList* list) {
     if (node->pcb.state == READY){
         list->ready++;
-        ready++;}
+        ready++;
+    }
     list->size++;
 }
 
@@ -178,8 +198,7 @@ static ProcessNode* removeRecursiveNode(ProcessNode* node, ProcessNode* node2, P
             ready--;
         }
         aux = node->next;
-        freeFun(node->pcb.argv);    //Libero el espacio reservado para arg
-        freeFun(node->pcb.rbp);     //Libero el stack del proceso
+        freeFun(node->pcb.processStartingMem);     //Libero el stack del proceso
         freeFun(node);              //Libero el espacio reservado para el nodo
         list->size--;
         return aux;
@@ -199,7 +218,7 @@ static void* getNextReady() {
     
     if(ready==0){
         currentProcess =dummyProcess;
-        return (dummyProcess->pcb.rsp);
+        return dummyProcess->pcb.rsp;
     }
     
     currentProcess = getRecursiveNextReady(currentProcess->next);
@@ -281,38 +300,11 @@ static uint64_t changeState(uint64_t pid, states newState) {
     return 0;
 }
 
-void* createContext(void* stack, uint64_t* arguments, void* (*funcion)(void*), int argc) {
-    StackFrame_t* stackStruct = (StackFrame_t*)stack;
-    stackStruct->base =(uint64_t) stack;
-    stackStruct->ss = 0x0;
-    stackStruct->rsp = stackStruct->base;
-    stackStruct->rflags = 0x202;
-    stackStruct->cs = 0x8;
-    stackStruct->rip =(uint64_t) funcion;
-    stackStruct->r15 = 0;
-    stackStruct->r14 = 0;
-    stackStruct->r13 = 0;
-    stackStruct->r12 = 0;
-    stackStruct->r11 = 0;
-    stackStruct->r10 = 0;
-    stackStruct->r9 = 0;
-    stackStruct->r8 = 0;
-    stackStruct->rsi =(uint64_t) arguments;
-    stackStruct->rdi = argc;
-    stackStruct->rbp = stackStruct->base;
-    stackStruct->rdx = 0;
-    stackStruct->rcx = 0;
-    stackStruct->rbx = 0;
-    stackStruct->rax = 0;
-    return &stackStruct->rax;
-}
-
 void* tickInterrupt(void* rsp) {
-    //ncPrint("int");
     timer_handler();
-    if (currentProcess!=NULL)
+    
+    if (currentProcess!=NULL){
         currentProcess->pcb.rsp=rsp;        //Guardo el rsp para el contexto
-    if (currentProcess != NULL) {
         tickCountScheduler++;
         if (tickCountScheduler > 18 - 2*currentProcess->priority) {
             getNextReady();
@@ -320,9 +312,12 @@ void* tickInterrupt(void* rsp) {
     }
 
     if (currentProcess == NULL) {
-        return dummyProcess->pcb.rsp;
-    } else
-        return currentProcess->pcb.rsp;
+        if(firstList==NULL){
+           return rsp;         //Si no hay ninguno prooceso retorno el rsp que vino
+        }
+        currentProcess=firstList->first;
+    }
+    return currentProcess->pcb.rsp;        
 }
 
 void* dummyinterrupt(void* rsp){

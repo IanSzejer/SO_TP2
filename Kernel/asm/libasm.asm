@@ -6,6 +6,7 @@ GLOBAL kbReadUntilCode
 GLOBAL getKbCode
 
 GLOBAL keyboardActivated
+GLOBAL createContext
 
 EXTERN handler
 EXTERN updateRegs
@@ -84,6 +85,41 @@ section .text
 	pop rcx
 	pop rbx
 %endmacro
+
+
+createContext:
+	push rbp
+	push rbx
+	mov rbx,rsp		;Guardo en rbx el stack apuntando a push rbx
+    mov rsp,rdi		;Pongo el stack start en rsp
+    ; <-rsp
+    push qword 0x0   ; ss
+    push qword rdi   ; rsp
+    push qword 0x202 ; rflags
+    push qword 0x8   ; cs
+    push qword rsi   ; rip
+    ; registros generales
+    push qword 0x1	 ;rax
+    push qword 0x2	 
+    push qword 0x3
+    push qword rdi	 ;rbp
+    push qword rdx	 ; argc =rdi 
+    push qword rcx 	 ; argv =rsi
+    push qword 0x4   
+    push qword 0x5
+    push qword 0x6
+    push qword 0x7
+    push qword 0x8
+    push qword 0x9
+    push qword 0xA
+    push qword 0xB
+    push qword 0xC
+
+    mov rax, rsp
+	mov rsp,rbx
+    pop rbx			 ;De esta forma restauro el rsp como estaba cuadno llamaron a createContext y el rbp
+    pop rbp
+    ret
 
 
 
