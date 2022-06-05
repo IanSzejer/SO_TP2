@@ -25,7 +25,12 @@ void loop(char seconds);
 void cat();
 void wc();
 void filter();
-
+void memState();
+void callKill(uint64_t pid);
+void callNice(uint64_t pid, uint64_t priority);
+void changeState(uint64_t pid, int status);
+void getPipes();
+void getAllProcesses();
 
 
 static char buffer1[32] = {0};
@@ -215,9 +220,9 @@ void setupShellCommands()
     loadCommand((void (*)(void*))&filter,"filter", "prints what its received,excluding vocals",0);
     loadCommand((void (*)(void*))&phylo,"philosophers","philosopher problem",0);
     loadCommand((void (*)(void*))&memState,"mem","see memory status",0);
-    loadCommand((void (*)(void*))&kill,"kill","kill a process",1);
-    loadCommand((void (*)())&nice,"nice","change a process priority",2);
-    loadCommand((void (*)(void*))&changeState,"block","block a process",1);
+    loadCommand((void (*)(void*))&callKill,"kill","kill a process",1);
+    loadCommand((void (*)())&callNice,"nice","change a process priority",2);
+    loadCommand((void (*)(void*))&changeState,"block or unblock","block or unblock a process",2);
     loadCommand((void (*)(void*))&getPipes,"pipe","see pipes status",0);
     loadCommand((void (*)(void*))&getAllProcesses,"ps","see processes status",0);
 
@@ -241,6 +246,7 @@ void wc(){
     num[0]=intToChar(count);
     print(num);
 }
+
 void filter(){
     char buffer[100];
     while(system_read(STDIN,buffer,100)>0)
@@ -254,6 +260,7 @@ void filter(){
         }
     }
 }
+
 void loop(char seconds){
     char string[1];
     string[0]=intToChar(getPidSys());
@@ -387,9 +394,33 @@ void sleep(int seconds)
         ;
 }
 
+void memState(){
+    mem_state();
+}
 
+void callKill(uint64_t pid){
+    kill(pid);
+}
 
+void callNice(uint64_t pid, uint64_t priority){
+    int i = nice(pid, priority);
+    if(i==-1){
+        printColor("Error al cambiar la prioridad del proceso\n", RED);
+    }
+}
 
+void changeState(uint64_t pid, int status){
+    change_state(pid, status);
+}
+
+void getPipes(){
+    get_pipes();
+}
+
+void getAllProcesses(){
+    get_all_processes();
+}
+   
 
 int theShell(){
     setupShellCommands();

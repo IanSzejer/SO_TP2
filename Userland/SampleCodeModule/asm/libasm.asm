@@ -27,19 +27,19 @@ GLOBAL malloc
 
 GLOBAL free
 
-GLOBAL memState
+GLOBAL mem_state
 
-GLOBAL newProcess
+GLOBAL new_process
 
-GLOBAL endProcess
+GLOBAL end_process
 
 GLOBAL kill
 
-GLOBAL getAllProcesses
+GLOBAL get_all_processes
 
 GLOBAL nice
 
-GLOBAL changeState
+GLOBAL change_state
 
 GLOBAL changeProcesses
 
@@ -60,9 +60,9 @@ GLOBAL createPipe
 GLOBAL openPipe
 
 
-GLOBAL getPipes
+GLOBAL get_pipes
 
-GLOBAL getPidSys
+GLOBAL get_pid_sys
 
 GLOBAL dup2
 
@@ -244,25 +244,25 @@ malloc:
 free:
     sysCall 13
 
-memState:
+mem_state:
     sysCall 14
 
-newProcess:
+new_process:
     sysCall 15
 
-endProcess:
+end_process:
     sysCall 16
 
 kill:
     sysCall 17
 
-getAllProcesses:
+get_all_processes:
     sysCall 18
 
 nice:
     sysCall 19
 
-changeState:
+change_state:
     sysCall 20
 
 changeProcesses:
@@ -292,10 +292,10 @@ createPipe:
 openPipe:
     sysCall 29
 
-getPipes:
+get_pipes:
     sysCall 30
 
-getPidSys:
+get_pid_sys:
     sysCall 31
 
 dup2:

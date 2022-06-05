@@ -27,14 +27,13 @@ extern void get_regs(char ** buf);
 extern void get_memory(unsigned int * p);
 extern void *malloc(size_t size);
 extern void free(void *ptr);
-extern void memState();
-extern uint64_t newProcess(void *(*funcion)(void *), void *argv, int argc,char* name);
-extern void endProcess(uint64_t pid);
+extern void mem_state();
+extern uint64_t new_process(void *(*funcion)(void *), void *argv, int argc,char* name);
+extern void end_process(uint64_t pid);
 extern void kill(uint64_t pid);
-extern void getAllProcesses();
 extern int getPid();
 extern int nice(uint64_t pid,uint64_t priority);
-extern void changeState(uint64_t pid, int status);
+extern void change_state(uint64_t pid, int status);
 extern void changeProcesses();
 extern int createSemaphore(char* name,uint64_t value);
 extern int openSemaphore(char* name,uint64_t value);
@@ -44,11 +43,10 @@ extern int waitSem(char* semaphore);
 extern int postSem(char* semaphore);
 extern int createPipe(int pipeFd[2]);
 extern void openPipe(void *ptr);
-extern void getPipes();
-extern int getPidSys();
+extern void get_pipes();
+extern int get_pid_sys();
 extern int dup2(uint64_t oldFd,uint64_t newFd);
-
-
+extern get_all_processes();
 
 void print(char * string);
 int strlength(char * string);
