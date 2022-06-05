@@ -46,7 +46,7 @@ extern void openPipe(void *ptr);
 extern void get_pipes();
 extern int get_pid_sys();
 extern int dup2(uint64_t oldFd,uint64_t newFd);
-extern get_all_processes();
+extern int get_all_processes();
 
 void print(char * string);
 int strlength(char * string);

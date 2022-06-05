@@ -263,7 +263,7 @@ void filter(){
 
 void loop(char seconds){
     char string[1];
-    string[0]=intToChar(getPidSys());
+    string[0]=intToChar(get_pid_sys());
     if(charToDigit(seconds)>=0)
     while(1){
         print("hola soy ");
@@ -278,7 +278,7 @@ void loop(char seconds){
 
 void loadCommand(void (*f)(), char *name, char *desc,int argAmount)
 {
-    shellCommands[cmdCounter].shellf = f;
+    shellCommands[cmdCounter].shellf = &f;
     shellCommands[cmdCounter].name = name;
     shellCommands[cmdCounter].description = desc;
     shellCommands[cmdCounter].argAmount= argAmount;
@@ -348,7 +348,8 @@ int cmdIndex(char *buf,char args[6][21])
         if(*(buf+i)==' '){
             spaceIndex=1;
         }else{
-            command[i++]=*(buf+i);        //Copio el comando hasta el espacio
+            command[i]=*(buf+i);        //Copio el comando hasta el espacio
+            i++;
         }
     }
     command[i]='\0';
@@ -451,7 +452,7 @@ int theShell(){
                 scanf(choose);
                 verify = cmdIndex(choose,args);
         }
-        newProcess(shellCommands[verify].shellf,args,shellCommands[verify].argAmount,shellCommands[verify].name);       //DEvuelve el pid
+        new_process(shellCommands[verify].shellf,args,shellCommands[verify].argAmount,shellCommands[verify].name);       //DEvuelve el pid
     }
     return 1;
 }
