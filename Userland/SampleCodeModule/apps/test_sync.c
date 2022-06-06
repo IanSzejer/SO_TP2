@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <stdio.h>
+#include "../include/stdinout.h"
 #include "test_util.h"
 #include "syscall.h"
 
@@ -28,7 +28,7 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]){
 
   if (use_sem)
     if (!my_sem_open(SEM_ID, 1)){
-      printf("test_sync: ERROR opening semaphore\n");
+      print("test_sync: ERROR opening semaphore\n");
       return -1;
     }
 
@@ -65,7 +65,7 @@ uint64_t test_sync(uint64_t argc, char *argv[]){ //{n, use_sem, 0}
     my_wait(pids[i + TOTAL_PAIR_PROCESSES]);
   }
 
-  printf("Final value: %d\n");
+  print("Final value: %d\n");
 
   return 0;
 }
