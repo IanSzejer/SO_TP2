@@ -64,7 +64,6 @@ int main()
 {		
 	//setExceptionRebootPoint((uint64_t)sampleCodeModuleAddress, getStack());
 	
-	ncInitVideoConsole();
 	initMemManager(heapModuleAdress,maxSize);
 	ncClear();
 	

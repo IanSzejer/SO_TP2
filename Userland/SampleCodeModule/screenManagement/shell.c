@@ -208,23 +208,23 @@ void copyLinesToShellOutput(char lines[][SHELLW], int qty)
 
 void setupShellCommands()
 {
-    loadCommand((void (*)(void*))&printDateTime, "datetime", "Displays the date and time",0);
-    loadCommand((void (*)(void*))&help, "help", "Shows a list of available commands",0);
-    loadCommand((void (*)(void*))&inforeg, "inforeg", "Shows the value of all registers",0);
-    loadCommand((void (*)(void*))&printmem, "printmem", "Prints 32 bytes of memory from arg. address",0);
-    loadCommand((void (*)(void*))&divideByZero, "exception0", "Executes rutine that generates \"division by zero\" exception",0);
-    loadCommand((void (*)(void*))&invalidOpCode, "exception6", "Executes rutine that generates \"invalid op. code\" exception",0);
-    loadCommand((void (*)(void*))&loop,"loop","prints a message with a delay inputed by user",1);
-    loadCommand((void (*)(void*))&cat,"cat", "prints what its received",0);
-    loadCommand((void (*)(void*))&wc,"wc", "counts the amount of lines inputed ",0);
-    loadCommand((void (*)(void*))&filter,"filter", "prints what its received,excluding vocals",0);
-    loadCommand((void (*)(void*))&phylo,"philosophers","philosopher problem",0);
-    loadCommand((void (*)(void*))&memState,"mem","see memory status",0);
-    loadCommand((void (*)(void*))&callKill,"kill","kill a process",1);
-    loadCommand((void (*)())&callNice,"nice","change a process priority",2);
-    loadCommand((void (*)(void*))&changeState,"block or unblock","block or unblock a process",2);
-    loadCommand((void (*)(void*))&getPipes,"pipe","see pipes status",0);
-    loadCommand((void (*)(void*))&getAllProcesses,"ps","see processes status",0);
+    loadCommand((void *(*)(void*))&printDateTime, "datetime", "Displays the date and time",0);
+    loadCommand((void *(*)(void*))&help, "help", "Shows a list of available commands",0);
+    loadCommand((void *(*)(void*))&inforeg, "inforeg", "Shows the value of all registers",0);
+    loadCommand((void *(*)(void*))&printmem, "printmem", "Prints 32 bytes of memory from arg. address",0);
+    loadCommand((void *(*)(void*))&divideByZero, "exception0", "Executes rutine that generates \"division by zero\" exception",0);
+    loadCommand((void *(*)(void*))&invalidOpCode, "exception6", "Executes rutine that generates \"invalid op. code\" exception",0);
+    loadCommand((void *(*)(void*))&loop,"loop","prints a message with a delay inputed by user",1);
+    loadCommand((void *(*)(void*))&cat,"cat", "prints what its received",0);
+    loadCommand((void *(*)(void*))&wc,"wc", "counts the amount of lines inputed ",0);
+    loadCommand((void *(*)(void*))&filter,"filter", "prints what its received,excluding vocals",0);
+    loadCommand((void *(*)(void*))&phylo,"philosophers","philosopher problem",0);
+    loadCommand((void *(*)(void*))&memState,"mem","see memory status",0);
+    loadCommand((void *(*)(void*))&callKill,"kill","kill a process",1);
+    loadCommand((void *(*)())&callNice,"nice","change a process priority",2);
+    loadCommand((void *(*)(void*))&changeState,"block or unblock","block or unblock a process",2);
+    loadCommand((void *(*)(void*))&getPipes,"pipe","see pipes status",0);
+    loadCommand((void *(*)(void*))&getAllProcesses,"ps","see processes status",0);
 
 }
 
@@ -295,48 +295,6 @@ void cleanBuffers()
     consoleMsg1[0] = consoleMsg2[0] = 0;
 }
 
-
-
-
-int readInput(char *buffer, int *size, char *def, char color, int maxSize)
-{
-    int begin = 1, c;
-
-    while ((*size) < (maxSize - 1) && ((c = getRealChar()) != '\n') && (c != UP_ARROW) && (c != DOWN_ARROW))
-    {
-        // if (!PRINTABLE(c))
-        //     continue;
-        if (begin)
-        {
-            clear_line();
-            printColor(def, color);
-            print(buffer);
-            begin = 0;
-        }
-
-        if (c != '\b' && PRINTABLE(c))
-        {
-            putChar(c);
-            buffer[(*size)++] = c;
-        }
-        else if (c == '\b' && (*size) > 0) // solo borro si escribi algo
-        {
-            putChar('\b');
-            (*size)--;
-        }
-        c = 0;
-    }
-    if (c == UP_ARROW || c == DOWN_ARROW)
-    {
-        currentShell = currentShell == 0 ? 1 : 0;
-        buffer[(*size)] = 0;
-        return c - 500;
-    }
-    buffer[(*size)] = 0;
-    putChar('\n');
-    (*size) = 0;
-    return 0;
-}
 
 // retorna -1 si el buffer no tiene ningun comando valido
 int cmdIndex(char *buf,char args[6][21])

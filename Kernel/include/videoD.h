@@ -6,18 +6,17 @@
 
 
 void ncPrint(const char * string);
-void ncPrintColor(const char * string, char color);
-void ncPrintChar(char character, char color);
+int ncStrlen(const char *str);
+void ncPrintChar(char character);
 void ncNewline();
-void ncDelete();
-void ncPrintDec(uint64_t value);
+void ncPrintDec(int64_t value);
 void ncPrintHex(uint64_t value);
 void ncPrintBin(uint64_t value);
 void ncPrintBase(uint64_t value, uint32_t base);
+void ncPrintReg(const char *regName, uint64_t regValue);
 void ncClear();
-int ncSplitConsole(int screens, int screen); 
-int ncChangeScreen(int screen); 
-void ncClearLine(); 
-void ncInitVideoConsole();
+int ncBackspace();
+void displayCursor();
+void deleteCursor();
 
 #endif

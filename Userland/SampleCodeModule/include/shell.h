@@ -14,6 +14,5 @@
 #define MAX_CMD_SIZE 30
 
 int theShell();
-int readInput(char *buffer, int* size, char * def, char color, int maxSize);
 void sleep(int seconds);
 #endif

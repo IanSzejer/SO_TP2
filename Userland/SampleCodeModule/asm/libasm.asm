@@ -3,13 +3,7 @@ GLOBAL system_read
 
 GLOBAL console_clear
 
-GLOBAL split_screen
-
-GLOBAL set_screen
-
 GLOBAL get_char
-
-GLOBAL clear_line
 
 GLOBAL get_time
 
@@ -146,32 +140,8 @@ console_clear:
     ; pop rbp
     ; ret
 
-split_screen:
-    sysCall 3
-    ; push rbp
-    ; mov rbp, rsp
-    ; push rbx
-    ; mov rax, 3
-    ; int 80h
-    ; pop rbx
-    ; mov rsp, rbp
-    ; pop rbp
-    ; ret
-
-set_screen:
-    sysCall 4
-    ; push rbp
-    ; mov rbp, rsp
-    ; push rbx
-    ; mov rax, 4
-    ; int 80h
-    ; pop rbx
-    ; mov rsp, rbp
-    ; pop rbp
-    ; ret
-
 get_char:
-    sysCall 5
+    sysCall 3
     ; push rbp
     ; mov rbp, rsp
     ; push rbx
@@ -182,20 +152,10 @@ get_char:
     ; pop rbp
     ; ret
 
-clear_line:
-    sysCall 6
-    ; push rbp
-    ; mov rbp, rsp
-    ; push rbx
-    ; mov rax, 6
-    ; int 80h
-    ; pop rbx
-    ; mov rsp, rbp
-    ; pop rbp
-    ; ret
+
 
 get_time:
-    sysCall 7
+    sysCall 4
     ; push rbp
     ; mov rbp, rsp
     ; push rbx
@@ -207,7 +167,7 @@ get_time:
     ; ret
 
 timer_tick:
-    sysCall 8
+    sysCall 5
     ; push rbp
     ; mov rbp, rsp
     ; push rbx
@@ -219,7 +179,7 @@ timer_tick:
     ; ret
 
 set_kb_target:
-    sysCall 9
+    sysCall 6
     ; push rbp
     ; mov rbp, rsp
     ; push rbx
@@ -231,72 +191,72 @@ set_kb_target:
     ; ret
 
 get_date:
-    sysCall 10
+    sysCall 7
 
 
 get_regs:
-    sysCall 11
+    sysCall 8
 
 
 malloc:
-    sysCall 12
+    sysCall 9
 
 free:
-    sysCall 13
+    sysCall 10
 
 mem_state:
-    sysCall 14
+    sysCall 11
 
 new_process:
-    sysCall 15
+    sysCall 12
 
 end_process:
-    sysCall 16
+    sysCall 13
 
 kill:
-    sysCall 17
+    sysCall 14
 
 get_all_processes:
-    sysCall 18
+    sysCall 15
 
 nice:
-    sysCall 19
+    sysCall 16
 
 change_state:
-    sysCall 20
+    sysCall 17
 
 changeProcesses:
-    sysCall 21
+    sysCall 18
 
 createSemaphore:
-    sysCall 22
+    sysCall 19
 
 openSemaphore:
-    sysCall 23
+    sysCall 20
 
 closeSemaphore:
-    sysCall 24
+    sysCall 21
 
 getSemaphores:
-    sysCall 25
+    sysCall 22
 
 waitSem:
-    sysCall 26
+    sysCall 23
 
 postSem:
-    sysCall 27
+    sysCall 24
 
 createPipe:
-    sysCall 28
+    sysCall 25
 
 openPipe:
-    sysCall 29
+    sysCall 26
 
 get_pipes:
-    sysCall 30
+    sysCall 27
 
 get_pid_sys:
-    sysCall 31
+    sysCall 28
 
 dup2:
-    sysCall 32
+    sysCall 29

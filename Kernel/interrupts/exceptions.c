@@ -56,16 +56,14 @@ void exceptionDispatcher(int exception, uint64_t * regs) {
 
 static void zero_division() {
 	// Handler para manejar excepcíon
-	ncSplitConsole(1,0);
 	ncClear();
-	ncPrintColor("Exception: division by zero",RED_COLOR);
+	ncPrint("Exception: division by zero");
 	ncNewline();
 }
 
 static void invalid_op() {
 	// Handler para manejar excepcíon
-	ncSplitConsole(1,0);
 	ncClear();
-	ncPrintColor("Exception: invalid operation code",RED_COLOR);
+	ncPrint("Exception: invalid operation code");
 	ncNewline();
 }

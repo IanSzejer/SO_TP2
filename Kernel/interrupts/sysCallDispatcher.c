@@ -21,8 +21,6 @@ typedef uint64_t (*SysCallR)(uint64_t, uint64_t, uint64_t, uint64_t); // defino 
 static uint64_t read(unsigned int fd, char *buf, uint64_t count); // deberia ser lo mismo que size_t
 static long write(uint64_t fd, char *buf, uint64_t count, int color);
 static void clear();
-static int splitScreen(int screens, int screen);
-static int changeScreen(int screen);
 static int getCharSys(unsigned int ascii);
 static void getTime(char *buf);
 static long timerTick(void (*f)());
@@ -49,8 +47,8 @@ static void getPipes();
 static int getPidSys();
 static int dup2(uint64_t oldFd, uint64_t newFd);
 
-static SysCallR sysCalls[255] = {(SysCallR)&read, (SysCallR)&write, (SysCallR)&clear, (SysCallR)&splitScreen,
-                                 (SysCallR)&changeScreen, (SysCallR)&getCharSys, (SysCallR)&ncClearLine, (SysCallR)&getTime, (SysCallR)&timerTick,
+static SysCallR sysCalls[255] = {(SysCallR)&read, (SysCallR)&write, (SysCallR)&clear, (SysCallR)&getCharSys, (SysCallR)&getTime,
+                                 (SysCallR)&timerTick,
                                  (SysCallR)&set_kb_target, (SysCallR)&getDate, (SysCallR)&getRegs, (SysCallR)&malloc, (SysCallR)&free,
                                  (SysCallR)&memState, (SysCallR)&newProcess, (SysCallR)&endProcess, (SysCallR)&kill, (SysCallR)&getAllProcesses, (SysCallR)&nice,
                                  (SysCallR)&changeState, (SysCallR)&changeProcesses, (SysCallR)&createSemaphore, (SysCallR)&openSemaphore,
@@ -102,10 +100,10 @@ static long write(uint64_t fd, char *buf, uint64_t count, int color)
             ncNewline();
             break;
         case '\b':
-            ncDelete();
+            ncBackspace();
             break;
         default:
-            ncPrintChar(buf[i], color);
+            ncPrintChar(buf[i]);
         }
     }
     return i > 0 ? i : -1;
@@ -139,15 +137,6 @@ static int getCharSys(unsigned int ascii)
             i--;
     }
     return a;
-}
-
-static int splitScreen(int screens, int screen)
-{
-    return ncSplitConsole(screens, screen);
-}
-static int changeScreen(int screen)
-{
-    return ncChangeScreen(screen);
 }
 
 
