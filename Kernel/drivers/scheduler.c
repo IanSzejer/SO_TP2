@@ -23,7 +23,8 @@ static void checkReady(ProcessNode* node, ProcessList* list) ;
 static ProcessList* removeRecursiveList(ProcessList* list, ProcessNode* process);
 static ProcessNode* removeRecursiveNode(ProcessNode* node, ProcessNode* node2, ProcessList* list);
 static void* getNextReady();
-static ProcessNode* getRecursiveNextReady(ProcessNode* current) ;
+static ProcessList* findList(uint64_t pid,ProcessList* list);
+static ProcessNode* getRecursiveNextReady(ProcessNode* current,ProcessList* list) ;
 static void initiateFd(ProcessNode* newProcess);
 static uint64_t changeState(uint64_t pid, states newState);
 static ProcessList* change(ProcessList* list, ProcessNode* process);
@@ -89,6 +90,7 @@ uint64_t createProcess(void* (*funcion)(void*), char* argv, int argc,char* proce
     newProcess->pcb.fd[1].reference = STDOUT;
     newProcess->pcb.fd[2].fd = 2;
     newProcess->pcb.fd[2].reference = STDERR;
+    newProcess->next=NULL;
     for (int i = 0; i < argc; i++)  //Copio los argumentos
       memcpy(newProcess->pcb.argv[i], arguments[i],strlength(arguments[i])*sizeof(char));
     initiateFd(newProcess);
@@ -198,7 +200,8 @@ static ProcessNode* removeRecursiveNode(ProcessNode* node, ProcessNode* node2, P
             ready--;
         }
         aux = node->next;
-        freeFun(node->pcb.processStartingMem);     //Libero el stack del proceso
+        freeFun(node->pcb.argv);    //Libero el espacio reservado para arg
+        freeFun(node->pcb.rbp);     //Libero el stack del proceso
         freeFun(node);              //Libero el espacio reservado para el nodo
         list->size--;
         return aux;
@@ -217,24 +220,44 @@ static void* getNextReady() {
     }
     
     if(ready==0){
-        currentProcess =dummyProcess;
-        return dummyProcess->pcb.rsp;
-    }
-    
-    currentProcess = getRecursiveNextReady(currentProcess->next);
         
+        currentProcess =dummyProcess;
+        return (dummyProcess->pcb.rsp);
+    }
+    ProcessList* currentList=findList(currentProcess->pcb.pid,firstList);
+    currentProcess = getRecursiveNextReady(currentProcess->next,currentList);
+    tickCountScheduler=0;
     return currentProcess->pcb.rsp;
+    
 }
 
-static ProcessNode* getRecursiveNextReady(ProcessNode* current) {
+static ProcessList* findList(uint64_t pid,ProcessList* list){
+    ProcessNode* aux=list->first;
+    while(aux!=NULL){
+        if(aux->pcb.pid==pid){
+            return list;
+        }
+        aux=aux->next;
+    }
+    return findList(pid,list->nextList);
+}
+
+static ProcessNode* getRecursiveNextReady(ProcessNode* current,ProcessList* list) {
+    if(list==NULL){
+        list=firstList;
+        current=list->first;
+        return getRecursiveNextReady(current, list);
+    }
     if (current == NULL) {
-        return getRecursiveNextReady(firstList->first);
+        list=list->nextList;
+        if(list!=NULL)
+        current=list->first;
+        return getRecursiveNextReady(current,list);
     }
 
     if (current->pcb.state == BLOCKED) {
-        return getRecursiveNextReady(current->next);
+        return getRecursiveNextReady(current->next,list);
     }
-
     return current;
 }
 
