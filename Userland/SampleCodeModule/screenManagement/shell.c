@@ -325,17 +325,16 @@ int cmdIndex(char *buf,char args[6][21])
         for(int j=0;j<6 && !ceroFound ;j++){          //Copio los args
             i++;
             if(*(buf+i)!='\0' && *(buf+i)!=' '){
-                argsRead++;     //Aumento la cantidad de argumentos leidos
                 int k=0;
                 while(k<21-1 && *(buf+i)!='\0' && *(buf+i)!=' '){
-                    args[j][k]=*(buf+i);
+                    args[argsRead][k]=*(buf+i);
                     i++;
                     k++;
                 }
                 if(*(buf+i)=='\0')
                     ceroFound=1;
-                args[j][k]='\0';
-                
+                args[argsRead][k]='\0';
+                argsRead++;     //Aumento la cantidad de argumentos leidos
 
             }
         }
@@ -361,10 +360,11 @@ void sleep(int seconds)
         ;
 }
 
-void memState(){
-    mem_state();
+void memState(){   
+    mem_state();    
     exit();
 }
+
 
 void callKill(uint64_t pid){
     kill(pid);
