@@ -60,6 +60,8 @@ GLOBAL get_pid_sys
 
 GLOBAL dup2
 
+GLOBAL exit
+
 %macro pushStateSysCall 0
 	push rbx
 	push rcx
@@ -260,3 +262,6 @@ get_pid_sys:
 
 dup2:
     sysCall 29
+
+exit:
+    sysCall 30

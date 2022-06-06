@@ -21,7 +21,7 @@ static ProcessList* recursiveAddList(ProcessNode* nodeToAdd, ProcessList* list) 
 static ProcessList* createList(ProcessNode* nodeToAdd, uint64_t priority);
 static void checkReady(ProcessNode* node, ProcessList* list) ;
 static ProcessList* removeRecursiveList(ProcessList* list, ProcessNode* process);
-static ProcessNode* removeRecursiveNode(ProcessNode* node, ProcessNode* node2, ProcessList* list);
+static ProcessNode* removeRecursiveNode(ProcessNode* node, ProcessNode* node2,ProcessNode* prevNode, ProcessList* list);
 static void* getNextReady();
 static ProcessList* findList(uint64_t pid,ProcessList* list);
 static ProcessNode* getRecursiveNextReady(ProcessNode* current,ProcessList* list) ;
@@ -184,7 +184,7 @@ static ProcessList* removeRecursiveList(ProcessList* list, ProcessNode* process)
     // si encontre la lista
     if (list->priority == process->priority) {
         //busco el nodo y lo elimino
-        list->first = removeRecursiveNode(list->first, process, list);
+        list->first = removeRecursiveNode(list->first, process,NULL, list);
     } else if (list->priority > process->priority) {
         //si me pase fin
         return list;
@@ -195,7 +195,7 @@ static ProcessList* removeRecursiveList(ProcessList* list, ProcessNode* process)
 }
 
 
-static ProcessNode* removeRecursiveNode(ProcessNode* node, ProcessNode* node2, ProcessList* list) {
+static ProcessNode* removeRecursiveNode(ProcessNode* node, ProcessNode* node2,ProcessNode* prevNode, ProcessList* list) {
     ProcessNode* aux;
     if (node == NULL) {
         return NULL;
@@ -206,21 +206,23 @@ static ProcessNode* removeRecursiveNode(ProcessNode* node, ProcessNode* node2, P
             ready--;
         }
         aux = node->next;
+        if(list->last==node){        //Tengo que modificar el last
+            list->last=prevNode;
+        }
         unblock(node->pcb.ppid);
         freeFun(node->pcb.processStartingMem);     //Libero el stack del proceso
         freeFun(node);              //Libero el espacio reservado para el nodo
         list->size--;
         return aux;
-    } else if (node->priority > node2->priority) {
-        return node;
-    }
-    node->next = removeRecursiveNode(node->next, node2, list);
+    } 
+    node->next = removeRecursiveNode(node->next, node2,node, list);
     return node;
 }
 
 static void* getNextReady() {
     // Si el proceso actual termino lo elimino
-    
+    ProcessList* currentList=findList(currentProcess->pcb.pid,firstList);
+    ProcessNode* aux=currentProcess->next;
     if (currentProcess->pcb.state == KILLED) {
         removeProcess(currentProcess->pcb.pid);
     }
@@ -230,8 +232,7 @@ static void* getNextReady() {
         currentProcess =dummyProcess;
         return (dummyProcess->pcb.rsp);
     }
-    ProcessList* currentList=findList(currentProcess->pcb.pid,firstList);
-    currentProcess = getRecursiveNextReady(currentProcess->next,currentList);
+    currentProcess = getRecursiveNextReady(aux,currentList);
     tickCountScheduler=0;
     return currentProcess->pcb.rsp;
     
@@ -302,12 +303,16 @@ uint64_t block(uint64_t pid) {
 static uint64_t changeState(uint64_t pid, states newState) {
     struct processNode* processNode;
 
+    processNode = findNode(pid);
+    ProcessList* list = findList(pid,firstList);
     if(newState == KILLED){
-        removeProcess(pid);
+        if (processNode->pcb.state == READY) {
+            list->ready--;
+            ready--;
+        }
+        processNode->pcb.state=KILLED;
         return 0;
     }
-
-    processNode = findNode(pid);
 
     if (processNode == NULL) {
         return -1;
@@ -318,10 +323,10 @@ static uint64_t changeState(uint64_t pid, states newState) {
     }
 
     if (processNode->pcb.state != READY && newState == READY) {
-        firstList->ready++;
+        list->ready++;
         ready++;
     } else if (processNode->pcb.state == READY && newState != READY) {
-        firstList->ready--;
+        list->ready--;
         ready--;
     }
 
@@ -332,16 +337,20 @@ static uint64_t changeState(uint64_t pid, states newState) {
 void* tickInterrupt(void* rsp) {
     timer_handler();
     
+    
     if (currentProcess!=NULL){
         currentProcess->pcb.rsp=rsp;        //Guardo el rsp para el contexto
+        if(currentProcess->pcb.state==BLOCKED || currentProcess->pcb.state==KILLED){
+            getNextReady();
+            return currentProcess->pcb.rsp;
+        }
         tickCountScheduler++;
         if (tickCountScheduler > 18 - 2*currentProcess->priority) {
             getNextReady();
         }
+        return currentProcess->pcb.rsp;     
     }
-    if(currentProcess->pcb.state==BLOCKED){
-        getNextReady();
-    }
+    
 
     if (currentProcess == NULL) {
         if(firstList==NULL){
@@ -413,24 +422,20 @@ static ProcessNode* changeNode(ProcessNode* node, ProcessNode* node2, ProcessLis
 }
 
 
-ProcessNode* listAllProcess(char* buf) {
+void listAllProcess(char* buf) {
     buf += printInitial(buf);
     *(buf++)='\n';
-    ProcessNode* toReturn[MAX_SIZE] = {NULL};
-    int i = 0;
     ProcessList* aux = firstList;
     while (aux != NULL) {
         ProcessNode* nodeAux = aux->first; 
         while (nodeAux != NULL){
             buf += printProcess(nodeAux,buf);
             *(buf++)='\n';
-            toReturn[i++] = nodeAux;
             nodeAux = nodeAux->next;
         } 
         aux = aux->nextList;
     }
-
-    return *toReturn;
+    *(buf++)='\0';
 }
 
 static int printInitial(char* buf){
@@ -497,8 +502,6 @@ static int printProcess(ProcessNode* node,char* buf){
         *(buf++)='e';
         i+=5;
     }
-    *(buf++)='\0';
-    i++;
     return i;
 }
 

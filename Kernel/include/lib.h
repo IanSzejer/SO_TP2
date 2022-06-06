@@ -32,6 +32,7 @@ typedef __UINT64_TYPE__ uint64_t;
 #define MOD_SIZE 25492
 #define SAMPLECODE_PTR 0x400000
 #define MAX_STR_LENGTH 300
+#define MAX_STR_LENGTH_EXTENDED 1000
 void * memset(void * destination, int32_t character, uint64_t length);
 void * memcpy(void * destination, const void * source, uint64_t length);
 
