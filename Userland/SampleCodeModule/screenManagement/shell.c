@@ -1,6 +1,7 @@
 #include "shell.h"
 #include "stdinout.h"
 #include "phylo.h"
+#include "test.h"
 #define SHELL_BUFFER_SIZE 128
 #define ARG_AMOUNT 6
 #define ARG_SIZE 21
@@ -95,11 +96,13 @@ void printDateTime(int argc,char argv[ARG_AMOUNT][ARG_SIZE])
 void help(int argc,char argv[ARG_AMOUNT][ARG_SIZE])
 {
 
-    char lines[cmdCounter][SHELLW];
+    char lines[20][SHELLW];
 
     for (int i = 0; i < cmdCounter; i++)
     {
         copyCommandDescriptor(lines[i], shellCommands[i]);
+        print(lines[i]);
+        print("\n");
     }
     copyLinesToShellOutput(lines, cmdCounter);
     exit();
@@ -160,7 +163,7 @@ void copyCommandDescriptor(char *buf, t_shellc cmd)
 
 void copyLinesToShellOutput(char lines[][SHELLW], int qty)
 {
-    shell_line *shell = currentShell == 0 ? shellBuffer1 : shellBuffer2;
+   /* shell_line *shell = currentShell == 0 ? shellBuffer1 : shellBuffer2;
     for (int i = 0; i < qty; i++)
     {
         copyOneLineUp(currentShell == 0 ? shellBuffer1 : shellBuffer2);
@@ -172,7 +175,8 @@ void copyLinesToShellOutput(char lines[][SHELLW], int qty)
         strcpy(shell[idx].line, lines[i]);
         shell[idx].isCmd = 0;
         idx++;
-    }
+    }*/
+    
 }
 
 void setupShellCommands()
@@ -191,28 +195,43 @@ void setupShellCommands()
     loadCommand((void *(*)(void*))&changeState,"block or unblock","block or unblock a process",2);
     loadCommand((void *(*)(void*))&getPipes,"pipe","see pipes status",0);
     loadCommand((void *(*)(void*))&getAllProcesses,"ps","see processes status",0);
-    loadCommand((void *(*)(void*))&test_sync,"sync_test","executes sync test",2);
-    loadCommand((void *(*)(void*))&test_mm,"mem_test","executes memory manager test",1);
-    loadCommand((void *(*)(void*))&test_prio,"prio_test","executes prio test",0);
-    loadCommand((void *(*)(void*))&test_processes,"process_test","executes process test",1);
+    loadCommand((void *(*)(void*))&test_sync,"synctest","executes sync test",2);
+    loadCommand((void *(*)(void*))&test_mm,"memtest","executes memory manager test",1);
+    loadCommand((void *(*)(void*))&test_prio,"priotest","executes prio test",0);
+    loadCommand((void *(*)(void*))&test_processes,"processtest","executes process test",1);
 }
 
+
 void cat(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
-    char ascii;
-    while((ascii=getCharSys())>0)
-        print(&ascii);
+     char buffer[100];
+    while(system_read(STDIN,buffer,100)>0)
+    {
+        int i=0;
+        while(buffer[i]){
+            putChar(buffer[i]);
+            i++;
+            
+        }
+        print("\n");
+    }
+    
     exit();
     
 }
 
 void wc(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
     char buffer[100];
-    int count;
+    int count=0;
     
     while(system_read(STDIN,buffer,100)>0)
         count++;
-    char num[1];
-    num[0]=intToChar(count);
+    char num[3]={0};
+    num[0]=intToChar(count%10);
+    if (count>10){
+        num[1]=num[0];
+        num[0]=intToChar((count/10)%10);
+    }
+
     print(num);
     exit();
 }
@@ -227,7 +246,9 @@ void filter(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
 
             }else{putChar(buffer[i]);
             }
+            i++;
         }
+        print("\n");
     }
     exit();
 }
