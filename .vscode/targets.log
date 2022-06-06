@@ -1,10 +1,6 @@
-make all --print-data-base --no-builtin-variables --no-builtin-rules --question
-# GNU Make 4.2.1
-# Built for x86_64-pc-linux-gnu
-# Copyright (C) 1988-2016 Free Software Foundation, Inc.
-# License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
-# This is free software: you are free to change and redistribute it.
-# There is NO WARRANTY, to the extent permitted by law.
+make.exe all --print-data-base --no-builtin-variables --no-builtin-rules --question
+'make.exe' is not recognized as an internal or external command,
+operable program or batch file.
 
 # Make data base, printed on Mon Jun  6 10:39:01 2022
 
