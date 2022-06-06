@@ -74,7 +74,7 @@ uint64_t createProcess(void* (*funcion)(void*), char* argv, int argc,char* proce
     void* stack = mallocFun(PROCESS_MEM_SIZE);
     
     void* stackTopPtr =(void*) createContext((uint64_t)stack + PROCESS_MEM_SIZE, funcion, argc, arguments);
-    
+
     ProcessNode* newProcess =(ProcessNode*) mallocFun(sizeof(ProcessNode));
     newProcess->pcb.rbp=stack+PROCESS_MEM_SIZE-1;
     memcpy(newProcess->pcb.name,processName,strlength(processName)*sizeof(char));
@@ -91,12 +91,18 @@ uint64_t createProcess(void* (*funcion)(void*), char* argv, int argc,char* proce
     newProcess->pcb.fd[2].fd = 2;
     newProcess->pcb.fd[2].reference = STDERR;
     newProcess->next=NULL;
+    if (currentProcess==NULL)
+        newProcess->pcb.ppid=0;//Caso solo de la shell
+    else{
+        newProcess->pcb.ppid=currentProcess->pcb.pid;
+    }
     for (int i = 0; i < argc; i++)  //Copio los argumentos
       memcpy(newProcess->pcb.argv[i], arguments[i],strlength(arguments[i])*sizeof(char));
     initiateFd(newProcess);
     // faltan cosas del pcb pero queria verlo con ustedes
     addProcess(newProcess);
     // asignar prioridad
+    block(newProcess->pcb.ppid);     //Bloqueo el proceso hijo hasta que el hijo termine
     return newProcess->pcb.pid;
 }
 /*  
@@ -200,8 +206,8 @@ static ProcessNode* removeRecursiveNode(ProcessNode* node, ProcessNode* node2, P
             ready--;
         }
         aux = node->next;
-        freeFun(node->pcb.argv);    //Libero el espacio reservado para arg
-        freeFun(node->pcb.rbp);     //Libero el stack del proceso
+        unblock(node->pcb.ppid);
+        freeFun(node->pcb.processStartingMem);     //Libero el stack del proceso
         freeFun(node);              //Libero el espacio reservado para el nodo
         list->size--;
         return aux;
@@ -332,6 +338,9 @@ void* tickInterrupt(void* rsp) {
         if (tickCountScheduler > 18 - 2*currentProcess->priority) {
             getNextReady();
         }
+    }
+    if(currentProcess->pcb.state==BLOCKED){
+        getNextReady();
     }
 
     if (currentProcess == NULL) {
