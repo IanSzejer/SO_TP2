@@ -50,10 +50,6 @@ int64_t my_sem_close(char *sem_id){
   return closeSemaphore(sem_id);
 }
 
-int64_t my_yield(){
-  
-  return 0;
-}
 
 int64_t my_wait(int64_t pid){
 

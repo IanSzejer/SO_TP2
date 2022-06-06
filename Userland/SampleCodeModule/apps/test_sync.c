@@ -22,9 +22,9 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]){
 
   if (argc != 3) return -1;
 
-  if ((n = strToInt(argv[0])) <= 0) return -1;
-  if ((inc = strToInt(argv[1])) == 0) return -1;
-  if ((use_sem = strToInt(argv[2])) < 0) return -1;
+  if ((n = satoi(argv[0])) <= 0) return -1;
+  if ((inc = satoi(argv[1])) == 0) return -1;
+  if ((use_sem = satoi(argv[2])) < 0) return -1;
 
   if (use_sem)
     if (!openSemaphore(SEM_ID, 1)){
@@ -56,8 +56,8 @@ uint64_t test_sync(uint64_t argc, char *argv[]){ //{n, use_sem, 0}
 
   uint64_t i;
   for(i = 0; i < TOTAL_PAIR_PROCESSES; i++){
-    pids[i] = new_process("my_process_inc", 3, argvDec, SEM_ID);
-    pids[i + TOTAL_PAIR_PROCESSES] = new_process("my_process_inc", 3, argvInc, SEM_ID);
+    pids[i] = my_create_process("my_process_inc", 3, argvDec);
+    pids[i + TOTAL_PAIR_PROCESSES] = my_create_process("my_process_inc", 3, argvInc);
   }
 
 //los wait q se usan aca no se q onda

@@ -99,21 +99,21 @@ createContext:
     push qword 0x8   ; cs
     push qword rsi   ; rip
     ; registros generales
-    push qword 0x1	 ;rax
-    push qword 0x2	 
-    push qword 0x3
-    push qword rdi	 ;rbp
-    push qword rdx	 ; argc =rdi 
-    push qword rcx 	 ; argv =rsi
-    push qword 0x4   
-    push qword 0x5
-    push qword 0x6
-    push qword 0x7
-    push qword 0x8
-    push qword 0x9
-    push qword 0xA
-    push qword 0xB
-    push qword 0xC
+    push qword 0x1
+	push qword 0x2
+	push qword 0x3
+	push qword 0x4
+	push qword 0x5
+	push qword rdx ; argc
+	push qword rcx ; argv
+	push qword 0x6
+	push qword 0x7
+	push qword 0x8
+	push qword 0x9
+	push qword 0xA
+	push qword 0xB
+	push qword 0xC
+	push qword 0xD
 
     mov rax, rsp
 	mov rsp,rbx

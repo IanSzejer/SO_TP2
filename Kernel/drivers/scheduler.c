@@ -9,6 +9,7 @@
 #define PROCESS_MEM_SIZE 10000 // El stack del proceso sera de 10000 bits
 #define BASE_PRIORITY 1
 
+int tickCountScheduler;
 static int ready;
 static ProcessList* firstList=NULL;
 static ProcessNode* currentProcess=NULL;
@@ -55,6 +56,10 @@ void initializeScheduler(void* (*funcion)(void*)) {
     createProcess(funcion,NULL,0,"shell");
     _sti();
 }
+
+void forceTickCount(){
+    tickCountScheduler=19;
+}
 // Como argumento recibe un puntero a funcion, como es un proceso no se que parametros recibe
 // Por ahora digo que devuelve void*, por decreto recibe hasta 3 argumentos de tamaño uint64_t
 uint64_t createProcess(void* (*funcion)(void*), char* argv, int argc,char* processName) {
@@ -68,7 +73,8 @@ uint64_t createProcess(void* (*funcion)(void*), char* argv, int argc,char* proce
             j++;
         }
         arguments[c][k] = 0;
-        c+=2;
+        j++;
+        c++;
     }
     void* stack = mallocFun(PROCESS_MEM_SIZE);
     

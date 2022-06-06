@@ -1,8 +1,12 @@
-make.exe all --print-data-base --no-builtin-variables --no-builtin-rules --question
-'make.exe' is not recognized as an internal or external command,
-operable program or batch file.
+make all --print-data-base --no-builtin-variables --no-builtin-rules --question
+# GNU Make 4.2.1
+# Built for x86_64-pc-linux-gnu
+# Copyright (C) 1988-2016 Free Software Foundation, Inc.
+# License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+# This is free software: you are free to change and redistribute it.
+# There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Mon Jun  6 10:39:01 2022
+# Make data base, printed on Mon Jun  6 16:03:15 2022
 
 # Variables
 
@@ -49,7 +53,7 @@ PATH = /home/ianlucklol3/.vscode-server/bin/c3511e6c69bb39013c4a4b7b9566ec1ca73f
 # environment
 VSCODE_LOG_STACK = false
 # environment
-VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-69b156b4-c39d-4510-9aaa-c5e203cdd9ba.sock
+VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-dd53a4f6-cb74-4334-9652-ff88432d7743.sock
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
 # environment
@@ -65,7 +69,7 @@ PWD = /home/ianlucklol3/SO_TP2
 # default
 .LOADED := 
 # environment
-WSL_INTEROP = /run/WSL/46_interop
+WSL_INTEROP = /run/WSL/21240_interop
 # environment
 VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
 # environment
@@ -273,14 +277,14 @@ userland:
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
-
  
+
 # strcache buffers: 1 (0) / strings = 30 / storage = 293 B / avg = 9 B
 # current buf: size = 8162 B / used = 293 B / count = 30 / avg = 9 B
 
 # strcache performance: lookups = 56 / hit rate = 46%
 # hash-table stats:
 # Load=30/8192=0%, Rehash=0, Collisions=10/56=18%
-# Finished Make data base on Mon Jun  6 10:39:01 2022
+# Finished Make data base on Mon Jun  6 16:03:15 2022
 
  

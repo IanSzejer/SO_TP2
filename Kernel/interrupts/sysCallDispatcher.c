@@ -377,8 +377,8 @@ static int dup2(uint64_t oldFd, uint64_t newFd){
 
 static void myYield(){
     //Lo pongo en 18 para que pase al next 
-    tickCountScheduler=18;
-    tickInterrupt();
+    forceTickCount();
+    forceTimer();
 }
 
 static void exit(){

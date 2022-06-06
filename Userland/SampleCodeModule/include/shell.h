@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "stdinout.h"
 #include "colors.h"
+#include "test.h"
 //#include "videoColors.h"
 
 #define SHELL_COLOR GREEN 

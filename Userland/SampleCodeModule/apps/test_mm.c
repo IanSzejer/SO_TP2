@@ -1,7 +1,7 @@
 #include "../include/stdinout.h"
 #include "test_util.h"
 #include "syscall.h"
-
+#include "../include/loader.h"
 #define MAX_BLOCKS 128
 
 typedef struct MM_rq{

@@ -1,7 +1,9 @@
 #include "shell.h"
 #include "stdinout.h"
-#include <phylo.h>
+#include "phylo.h"
 #define SHELL_BUFFER_SIZE 128
+#define ARG_AMOUNT 6
+#define ARG_SIZE 21
 typedef struct
 {
     char line[SHELLW];
@@ -16,21 +18,21 @@ typedef struct
     int argAmount;
 } t_shellc;
 
-int cmdIndex(char *buf,char args[6][21]);
+int cmdIndex(char *buf,char args[ARG_AMOUNT][ARG_SIZE]);
 void loadCommand(void *(*f)(void *), char *name, char *desc,int argAmount);
 void copyOneLineUp(shell_line shellBuffer[SHELLH]);
 void copyCommandDescriptor(char *buf, t_shellc cmd);
 void copyLinesToShellOutput(char lines[][SHELLW], int qty);
-void loop(char seconds);
-void cat();
-void wc();
-void filter();
-void memState();
-void callKill(uint64_t pid);
-void callNice(uint64_t pid, uint64_t priority);
-void changeState(uint64_t pid, int status);
-void getPipes();
-void getAllProcesses();
+void loop(int argc,char argv[ARG_AMOUNT][ARG_SIZE]);
+void cat(int argc,char argv[ARG_AMOUNT][ARG_SIZE]);
+void wc(int argc,char argv[ARG_AMOUNT][ARG_SIZE]);
+void filter(int argc,char argv[ARG_AMOUNT][ARG_SIZE]);
+void memState(int argc,char argv[ARG_AMOUNT][ARG_SIZE]);
+void callKill(int argc,char argv[ARG_AMOUNT][ARG_SIZE]);
+void callNice(int argc,char argv[ARG_AMOUNT][ARG_SIZE]);
+void changeState(int argc,char argv[ARG_AMOUNT][ARG_SIZE]);
+void getPipes(int argc,char argv[ARG_AMOUNT][ARG_SIZE]);
+void getAllProcesses(int argc,char argv[ARG_AMOUNT][ARG_SIZE]);
 
 
 static char buffer1[32] = {0};
@@ -79,7 +81,7 @@ void updateConsoleMsg(char *s)
     strcpy(consoleMsg, s);
 }
 
-void printDateTime()
+void printDateTime(int argc,char argv[ARG_AMOUNT][ARG_SIZE])
 {
     char buf[20] = {0};
     get_date(buf);
@@ -90,7 +92,7 @@ void printDateTime()
     exit();
 }
 
-void help()
+void help(int argc,char argv[ARG_AMOUNT][ARG_SIZE])
 {
 
     char lines[cmdCounter][SHELLW];
@@ -103,7 +105,7 @@ void help()
     exit();
 }
 
-void inforeg()
+void inforeg(int argc,char argv[ARG_AMOUNT][ARG_SIZE])
 {
 
     int j = 0;
@@ -138,45 +140,6 @@ void invalidOpCode()
     exit();
 }
 
-// Acepta valores decimales y tambien hexadecimales con el prefijo '0x'
-void printmem(char *dirString)
-{
-    if (!dirString)
-    {
-        updateConsoleMsg("address argument needed");
-        return;
-    }
-    char *splitted[2] = {0};
-    uint8_t *ptr;
-    split(dirString, 'x', splitted);
-    if (splitted[1])
-    {
-        char *hexaAddress = splitted[1];
-        ptr = (uint8_t *)(long)atoi_base(hexaAddress, 16);
-    }
-    else
-    {
-        ptr = (uint8_t *)(long)atoi_base(splitted[0], 10);
-    }
-    char output[2][SHELLW];
-    char aux[10] = {"0x"};
-    int idx = 0;
-    output[0][0] = output[1][0] = 0;
-    for (int i = 0; i < 32; i++)
-    {
-        if (i == 16)
-            idx = 1;
-        itoa(ptr[i], aux + 2, 16);
-        int len = strcat(output[idx], aux);
-        if (i != 15 && i != 31)
-        {
-            output[idx][len] = ' ';
-            output[idx][len + 1] = 0;
-        }
-    }
-    copyLinesToShellOutput(output, 2);
-    exit();
-}
 
 void copyOneLineUp(shell_line shellBuffer[SHELLH])
 {
@@ -217,9 +180,6 @@ void setupShellCommands()
     loadCommand((void *(*)(void*))&printDateTime, "datetime", "Displays the date and time",0);
     loadCommand((void *(*)(void*))&help, "help", "Shows a list of available commands",0);
     loadCommand((void *(*)(void*))&inforeg, "inforeg", "Shows the value of all registers",0);
-    loadCommand((void *(*)(void*))&printmem, "printmem", "Prints 32 bytes of memory from arg. address",0);
-    loadCommand((void *(*)(void*))&divideByZero, "exception0", "Executes rutine that generates \"division by zero\" exception",0);
-    loadCommand((void *(*)(void*))&invalidOpCode, "exception6", "Executes rutine that generates \"invalid op. code\" exception",0);
     loadCommand((void *(*)(void*))&loop,"loop","prints a message with a delay inputed by user",1);
     loadCommand((void *(*)(void*))&cat,"cat", "prints what its received",0);
     loadCommand((void *(*)(void*))&wc,"wc", "counts the amount of lines inputed ",0);
@@ -231,10 +191,13 @@ void setupShellCommands()
     loadCommand((void *(*)(void*))&changeState,"block or unblock","block or unblock a process",2);
     loadCommand((void *(*)(void*))&getPipes,"pipe","see pipes status",0);
     loadCommand((void *(*)(void*))&getAllProcesses,"ps","see processes status",0);
-
+    loadCommand((void *(*)(void*))&test_sync,"sync_test","executes sync test",2);
+    loadCommand((void *(*)(void*))&test_mm,"mem_test","executes memory manager test",1);
+    loadCommand((void *(*)(void*))&test_prio,"prio_test","executes prio test",0);
+    loadCommand((void *(*)(void*))&test_processes,"process_test","executes process test",1);
 }
 
-void cat(){
+void cat(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
     char ascii;
     while((ascii=getCharSys())>0)
         print(&ascii);
@@ -242,7 +205,7 @@ void cat(){
     
 }
 
-void wc(){
+void wc(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
     char buffer[100];
     int count;
     
@@ -254,7 +217,7 @@ void wc(){
     exit();
 }
 
-void filter(){
+void filter(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
     char buffer[100];
     while(system_read(STDIN,buffer,100)>0)
     {
@@ -269,15 +232,19 @@ void filter(){
     exit();
 }
 
-void loop(char seconds){
-    char string[1];
-    string[0]=intToChar(get_pid_sys());
-    if(charToDigit(seconds)>=0)
-    while(1){
-        print("hola soy ");
-        print(string);
-        print("\n");
-        sleep(seconds);
+void loop(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
+    int numero;
+    numero = atoi(argv[0]);
+    char string[4];
+    int i=numToStr(get_pid_sys(),string,10);
+    string[i]='\0';
+    if(numero>0){
+        while(1){
+            print("hola soy ");
+            print(string);
+            print("\n");
+            sleep(numero);
+        }
     }
     else print("ERROR:No se inserto un numero");
     exit();
@@ -305,7 +272,7 @@ void cleanBuffers()
 
 
 // retorna -1 si el buffer no tiene ningun comando valido
-int cmdIndex(char *buf,char args[6][21])
+int cmdIndex(char *buf,char args[ARG_AMOUNT][ARG_SIZE])
 {
     int spaceIndex=0;
     int i=0;
@@ -360,42 +327,42 @@ void sleep(int seconds)
         ;
 }
 
-void memState(){   
+void memState(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){   
     mem_state();    
     exit();
 }
 
 
-void callKill(uint64_t pid){
-    kill(pid);
+void callKill(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
+    kill(atoi(argv[0]));
     exit();
 }
 
-void callNice(uint64_t pid, uint64_t priority){
-    int i = nice(pid, priority);
+void callNice(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
+    int i = nice(atoi(argv[0]), atoi(argv[1]));
     if(i==-1){
         printColor("Error al cambiar la prioridad del proceso\n", RED);
     }
     exit();
 }
 
-void changeState(uint64_t pid, int status){
-    change_state(pid, status);
+void changeState(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
+    change_state(atoi(argv[0]), atoi(argv[1]));
     exit();
 }
 
-void getPipes(){
+void getPipes(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
     get_pipes();
     exit();
 }
 
-void getAllProcesses(){
+void getAllProcesses(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
     get_all_processes();
     exit();
 }
    
 
-int theShell(){
+int theShell(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
     setupShellCommands();
     print("Bienvenido! \n");
     print("Por favor ingrese su usuario: ");
@@ -409,7 +376,7 @@ int theShell(){
         print(username);
         print(":");
         scanf(choose);
-        char args[6][21];
+        char args[ARG_AMOUNT][ARG_SIZE];
         int verify = cmdIndex(choose,args);
         while(verify<0){
                 if(verify==-1){
