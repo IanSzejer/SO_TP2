@@ -20,7 +20,7 @@ extern void infoReg(char **buf);
 typedef uint64_t (*SysCallR)(uint64_t, uint64_t, uint64_t, uint64_t); // defino un puntero a funcion SysCallR
 
 static int read(unsigned int fd, char *buf, int count); // deberia ser lo mismo que size_t
-static long write(uint64_t fd, char *buf, uint64_t count, int color);
+static long write(uint64_t fd, char *buf, int count, int color);
 static void clear();
 static int getCharSys(unsigned int ascii);
 static void getTime(char *buf);
@@ -48,6 +48,7 @@ static void getPipes();
 static int getPidSys();
 static int dup2(uint64_t oldFd, uint64_t newFd);
 static void myYield();
+static void exit();
 
 static SysCallR sysCalls[255] = {(SysCallR)&read, (SysCallR)&write, (SysCallR)&clear, (SysCallR)&getCharSys, (SysCallR)&getTime,
                                  (SysCallR)&timerTick,
@@ -56,7 +57,7 @@ static SysCallR sysCalls[255] = {(SysCallR)&read, (SysCallR)&write, (SysCallR)&c
                                  (SysCallR)&changeState, (SysCallR)&changeProcesses, (SysCallR)&createSemaphore, (SysCallR)&openSemaphore,
                                  (SysCallR)&closeSemaphore, (SysCallR)&getSemaphores,
                                  (SysCallR)&wait, (SysCallR)&post, (SysCallR)&createPipe, (SysCallR)&openPipe,
-                                 (SysCallR)&getPipes,(SysCallR)&getPidSys,(SysCallR)&dup2, (SysCallR)&myYield};
+                                 (SysCallR)&getPipes,(SysCallR)&getPidSys,(SysCallR)&dup2, (SysCallR)&myYield, (SysCallR)&exit};
 
 uint64_t sysCallDispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_t rax)
 {
@@ -77,7 +78,7 @@ static long timerTick(void (*f)())
     return ticks_elapsed();
 }
 
-static long write(uint64_t fd, char *buf, uint64_t count, int color)
+static long write(uint64_t fd, char *buf, int count, int color)
 {
     uint64_t ref;
     if (buf == NULL)
@@ -290,7 +291,7 @@ static void kill(uint64_t pid)
 
 static void getAllProcesses()
 {
-    char buf[MAX_STR_LENGTH];
+    char buf[MAX_STR_LENGTH_EXTENDED];
     listAllProcess(buf);
     write(STDOUT, buf, MAX_STR_LENGTH, WHITE);
 }
@@ -315,7 +316,7 @@ static void changeState(uint64_t pid, int status)
 
 static void changeProcesses()
 {
-
+    
 }
 
 static int createSemaphore(char* name,uint64_t value)
@@ -378,4 +379,8 @@ static void myYield(){
     //Lo pongo en 18 para que pase al next 
     tickCountScheduler=18;
     tickInterrupt();
+}
+
+static void exit(){
+    killProcess(getProcessRunning());
 }

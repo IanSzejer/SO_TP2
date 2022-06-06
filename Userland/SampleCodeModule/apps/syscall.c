@@ -1,12 +1,18 @@
 #include <stdint.h>
 #include "stdinout.h"
 
+void loop2(){
+  while(1){
+
+  }
+}
+
 int64_t my_getpid(){
   return get_pid_sys();
 }
 
 int64_t my_create_process(char * name, uint64_t argc, char *argv[]){
-  return new_process(&loop,argv,argc,name);
+  return new_process((void *(*)(void*))&loop2,argv,argc,name);
 }
 
 int64_t my_nice(uint64_t pid, uint64_t newPrio){
@@ -54,8 +60,4 @@ int64_t my_wait(int64_t pid){
   return 0;
 }
 
-void loop(){
-  while(1){
 
-  }
-}

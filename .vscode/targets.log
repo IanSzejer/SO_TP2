@@ -2,7 +2,7 @@ make.exe all --print-data-base --no-builtin-variables --no-builtin-rules --quest
 'make.exe' is not recognized as an internal or external command,
 operable program or batch file.
 
-# Make data base, printed on Mon Jun  6 00:27:12 2022
+# Make data base, printed on Mon Jun  6 10:39:01 2022
 
 # Variables
 
@@ -18,7 +18,6 @@ WSLENV = VSCODE_WSL_EXT_LOCATION/up
 VSCODE_LOG_NATIVE = false
 # automatic
 ?D = $(patsubst %/,%,$(dir $?))
- 
 # automatic
 @D = $(patsubst %/,%,$(dir $@))
 # automatic
@@ -50,7 +49,7 @@ PATH = /home/ianlucklol3/.vscode-server/bin/c3511e6c69bb39013c4a4b7b9566ec1ca73f
 # environment
 VSCODE_LOG_STACK = false
 # environment
-VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-e26c0dd3-09f4-4297-acfe-b700ee97ba75.sock
+VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-69b156b4-c39d-4510-9aaa-c5e203cdd9ba.sock
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
 # environment
@@ -66,7 +65,7 @@ PWD = /home/ianlucklol3/SO_TP2
 # default
 .LOADED := 
 # environment
-WSL_INTEROP = /run/WSL/24100_interop
+WSL_INTEROP = /run/WSL/46_interop
 # environment
 VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
 # environment
@@ -145,10 +144,8 @@ TERM = xterm-256color
 VSCODE_EXTHOST_WILL_SEND_SOCKET = true
 # environment
 WSL_DISTRO_NAME = Ubuntu-20.04
-# environment
-MOTD_SHOWN = update-motd
 # variable set hash-table stats:
-# Load=70/1024=7%, Rehash=0, Collisions=4/98=4%
+# Load=69/1024=7%, Rehash=0, Collisions=4/97=4%
 
 # Pattern-specific Variable Values
 
@@ -277,12 +274,13 @@ userland:
 
 # No general ('VPATH' variable) search path.
 
+ 
 # strcache buffers: 1 (0) / strings = 30 / storage = 293 B / avg = 9 B
 # current buf: size = 8162 B / used = 293 B / count = 30 / avg = 9 B
 
 # strcache performance: lookups = 56 / hit rate = 46%
 # hash-table stats:
 # Load=30/8192=0%, Rehash=0, Collisions=10/56=18%
-# Finished Make data base on Mon Jun  6 00:27:12 2022
+# Finished Make data base on Mon Jun  6 10:39:01 2022
 
  

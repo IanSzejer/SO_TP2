@@ -1,4 +1,5 @@
-#include <stdio.h>
+#include <stdint.h>
+#include "../include/stdinout.h"
 #include "test_util.h"
 #include "stdinout.h"
 

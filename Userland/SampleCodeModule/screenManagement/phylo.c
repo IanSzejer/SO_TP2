@@ -83,6 +83,7 @@ void phylo(int argc, char** argv){
             return;
         }
     }
+    exit();
 }
 
 static int addPhylo(int pIndex){

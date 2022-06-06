@@ -76,7 +76,7 @@ uint64_t killProcess(uint64_t pid);
 uint64_t unblock(uint64_t pid);
 uint64_t block(uint64_t pid);
 void changePriority(uint64_t pid, uint64_t newPriority);
-ProcessNode *listAllProcess(char* buf);
+void listAllProcess(char* buf);
 uint64_t getPid();
 uint64_t getFdRef(uint64_t fd);
 int dup(uint64_t fdOld,uint64_t fdNew);

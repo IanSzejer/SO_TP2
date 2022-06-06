@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <stdio.h>
+#include "../include/stdinout.h"
 #include "test_util.h"
 #include "syscall.h"
 
@@ -22,29 +22,29 @@ void test_prio(){
     pids[i] = my_create_process("endless_loop_print", 0, argv);
 
   bussy_wait(WAIT);
-  printf("\nCHANGING PRIORITIES...\n");
+  print("\nCHANGING PRIORITIES...\n");
 
   for(i = 0; i < TOTAL_PROCESSES; i++)
     my_nice(pids[0], prio[i]);
 
   bussy_wait(WAIT);
-  printf("\nBLOCKING...\n");
+  print("\nBLOCKING...\n");
 
   for(i = 0; i < TOTAL_PROCESSES; i++)
     my_block(pids[i]);
 
-  printf("CHANGING PRIORITIES WHILE BLOCKED...\n");
+  print("CHANGING PRIORITIES WHILE BLOCKED...\n");
 
   for(i = 0; i < TOTAL_PROCESSES; i++)
     my_nice(pids[i], MEDIUM);
 
-  printf("UNBLOCKING...\n");
+  print("UNBLOCKING...\n");
 
   for(i = 0; i < TOTAL_PROCESSES; i++)
     my_unblock(pids[i]);
 
   bussy_wait(WAIT);
-  printf("\nKILLING...\n");
+  print("\nKILLING...\n");
 
   for(i = 0; i < TOTAL_PROCESSES; i++)
     my_kill(pids[i]);

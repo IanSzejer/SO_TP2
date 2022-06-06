@@ -87,6 +87,7 @@ void printDateTime()
     buf[9] = '-';
     get_time(&buf[11]);
     updateConsoleMsg(buf);
+    exit();
 }
 
 void help()
@@ -99,6 +100,7 @@ void help()
         copyCommandDescriptor(lines[i], shellCommands[i]);
     }
     copyLinesToShellOutput(lines, cmdCounter);
+    exit();
 }
 
 void inforeg()
@@ -119,6 +121,7 @@ void inforeg()
         }
     }
     copyLinesToShellOutput(lines, 5);
+    exit();
 }
 
 void divideByZero()
@@ -126,11 +129,13 @@ void divideByZero()
     int a = 5, b = 0, c;
     c = a / b;
     c++;
+    exit();
 }
 
 void invalidOpCode()
 {
     __asm__("UD2"); // inline assembler. Usamos la instruccion UD2 que arroja la excepcion.
+    exit();
 }
 
 // Acepta valores decimales y tambien hexadecimales con el prefijo '0x'
@@ -170,6 +175,7 @@ void printmem(char *dirString)
         }
     }
     copyLinesToShellOutput(output, 2);
+    exit();
 }
 
 void copyOneLineUp(shell_line shellBuffer[SHELLH])
@@ -232,7 +238,7 @@ void cat(){
     char ascii;
     while((ascii=getCharSys())>0)
         print(&ascii);
-    
+    exit();
     
 }
 
@@ -245,6 +251,7 @@ void wc(){
     char num[1];
     num[0]=intToChar(count);
     print(num);
+    exit();
 }
 
 void filter(){
@@ -259,6 +266,7 @@ void filter(){
             }
         }
     }
+    exit();
 }
 
 void loop(char seconds){
@@ -272,7 +280,7 @@ void loop(char seconds){
         sleep(seconds);
     }
     else print("ERROR:No se inserto un numero");
-
+    exit();
 }
 
 
@@ -355,10 +363,12 @@ void sleep(int seconds)
 
 void memState(){
     mem_state();
+    exit();
 }
 
 void callKill(uint64_t pid){
     kill(pid);
+    exit();
 }
 
 void callNice(uint64_t pid, uint64_t priority){
@@ -366,18 +376,22 @@ void callNice(uint64_t pid, uint64_t priority){
     if(i==-1){
         printColor("Error al cambiar la prioridad del proceso\n", RED);
     }
+    exit();
 }
 
 void changeState(uint64_t pid, int status){
     change_state(pid, status);
+    exit();
 }
 
 void getPipes(){
     get_pipes();
+    exit();
 }
 
 void getAllProcesses(){
     get_all_processes();
+    exit();
 }
    
 

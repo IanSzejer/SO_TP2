@@ -48,6 +48,7 @@ extern int get_pid_sys();
 extern int dup2(uint64_t oldFd,uint64_t newFd);
 extern int get_all_processes();
 extern void my_yield();
+extern void exit();
 
 void print(char * string);
 int strlength(char * string);

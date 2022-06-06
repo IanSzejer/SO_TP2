@@ -61,6 +61,7 @@ GLOBAL get_pid_sys
 GLOBAL dup2
 
 GLOBAL my_yield
+GLOBAL exit
 
 %macro pushStateSysCall 0
 	push rbx
@@ -265,3 +266,5 @@ dup2:
 
 my_yield:
     sysCall 30
+exit:
+    sysCall 31
