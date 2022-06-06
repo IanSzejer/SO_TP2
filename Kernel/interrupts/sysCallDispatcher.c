@@ -47,6 +47,7 @@ static void openPipe(void *ptr);
 static void getPipes();
 static int getPidSys();
 static int dup2(uint64_t oldFd, uint64_t newFd);
+static void myYield();
 
 static SysCallR sysCalls[255] = {(SysCallR)&read, (SysCallR)&write, (SysCallR)&clear, (SysCallR)&getCharSys, (SysCallR)&getTime,
                                  (SysCallR)&timerTick,
@@ -55,7 +56,7 @@ static SysCallR sysCalls[255] = {(SysCallR)&read, (SysCallR)&write, (SysCallR)&c
                                  (SysCallR)&changeState, (SysCallR)&changeProcesses, (SysCallR)&createSemaphore, (SysCallR)&openSemaphore,
                                  (SysCallR)&closeSemaphore, (SysCallR)&getSemaphores,
                                  (SysCallR)&wait, (SysCallR)&post, (SysCallR)&createPipe, (SysCallR)&openPipe,
-                                 (SysCallR)&getPipes,(SysCallR)&getPidSys,(SysCallR)&dup2};
+                                 (SysCallR)&getPipes,(SysCallR)&getPidSys,(SysCallR)&dup2, (SysCallR)&myYield};
 
 uint64_t sysCallDispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_t rax)
 {
@@ -371,4 +372,10 @@ static int getPidSys(){
 
 static int dup2(uint64_t oldFd, uint64_t newFd){
     return dup(oldFd,newFd);
+}
+
+static void myYield(){
+    //Lo pongo en 18 para que pase al next 
+    tickCountScheduler=18;
+    tickInterrupt();
 }

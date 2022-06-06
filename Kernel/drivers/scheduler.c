@@ -14,7 +14,6 @@ static ProcessList* firstList=NULL;
 static ProcessNode* currentProcess=NULL;
 static ProcessNode* dummyProcess=NULL;
 static uint64_t pidCounter = 1;
-int tickCountScheduler;
 static int strlength(char* text);
 static uint64_t getNewPid();
 static ProcessList* recursiveAddList(ProcessNode* nodeToAdd, ProcessList* list) ;
