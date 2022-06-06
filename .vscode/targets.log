@@ -6,7 +6,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Sun Jun  5 16:52:45 2022
+# Make data base, printed on Sun Jun  5 22:40:26 2022
 
 # Variables
 
@@ -16,9 +16,9 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 ?F = $(notdir $?)
 # environment
 WSLENV = VSCODE_WSL_EXT_LOCATION/up
+ 
 # default
 .SHELLFLAGS := -c
- 
 # environment
 VSCODE_LOG_NATIVE = false
 # automatic
@@ -33,6 +33,7 @@ CURDIR := /home/ianlucklol3/SO_TP2
 SHELL = /bin/sh
 # environment
 VSCODE_NLS_CONFIG = {"locale":"en","availableLanguages":{}}
+ 
 # environment
 _ = /home/ianlucklol3/.vscode-server/bin/c3511e6c69bb39013c4a4b7b9566ec1ca73fc4d5/node
 # makefile (from 'Makefile', line 1)
@@ -54,7 +55,7 @@ PATH = /home/ianlucklol3/.vscode-server/bin/c3511e6c69bb39013c4a4b7b9566ec1ca73f
 # environment
 VSCODE_LOG_STACK = false
 # environment
-VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-c29f3034-105b-4615-a7ef-eae73cc0a4f0.sock
+VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-e9208cb5-5e1b-4208-a9dd-e5cdce533409.sock
 # default
 .FEATURES := target-specific order-only second-expansion else-if shortest-stem undefine oneshell archives jobserver output-sync check-symlink load
 # environment
@@ -70,7 +71,7 @@ PWD = /home/ianlucklol3/SO_TP2
 # default
 .LOADED := 
 # environment
-WSL_INTEROP = /run/WSL/90_interop
+WSL_INTEROP = /run/WSL/18708_interop
 # environment
 VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
 # environment
@@ -149,10 +150,8 @@ TERM = xterm-256color
 VSCODE_EXTHOST_WILL_SEND_SOCKET = true
 # environment
 WSL_DISTRO_NAME = Ubuntu-20.04
-# environment
-MOTD_SHOWN = update-motd
 # variable set hash-table stats:
-# Load=70/1024=7%, Rehash=0, Collisions=4/98=4%
+# Load=69/1024=7%, Rehash=0, Collisions=4/97=4%
 
 # Pattern-specific Variable Values
 
@@ -270,6 +269,7 @@ userland:
 #  Implicit rule search has not been done.
 #  File does not exist.
 #  File has not been updated.
+ 
 #  recipe to execute (from 'Makefile', line 11):
 	cd Userland; make all
 
@@ -287,6 +287,6 @@ userland:
 # strcache performance: lookups = 56 / hit rate = 46%
 # hash-table stats:
 # Load=30/8192=0%, Rehash=0, Collisions=10/56=18%
-# Finished Make data base on Sun Jun  5 16:52:45 2022
+# Finished Make data base on Sun Jun  5 22:40:26 2022
 
  

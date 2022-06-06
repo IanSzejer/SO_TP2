@@ -13,12 +13,13 @@
 #define STDOUT 1
 #define STDERR 2
 
+int mayus = 0;
 
 extern void infoReg(char **buf);
 
 typedef uint64_t (*SysCallR)(uint64_t, uint64_t, uint64_t, uint64_t); // defino un puntero a funcion SysCallR
 
-static uint64_t read(unsigned int fd, char *buf, uint64_t count); // deberia ser lo mismo que size_t
+static int read(unsigned int fd, char *buf, int count); // deberia ser lo mismo que size_t
 static long write(uint64_t fd, char *buf, uint64_t count, int color);
 static void clear();
 static int getCharSys(unsigned int ascii);
@@ -109,7 +110,71 @@ static long write(uint64_t fd, char *buf, uint64_t count, int color)
     return i > 0 ? i : -1;
 }
 
-static uint64_t read(unsigned int fd, char *buf, uint64_t count)
+static int readFromStdin(char* buf,uint64_t count){
+    int charsRead=0;
+    char key;
+    while (charsRead < count || count == -1) {
+
+      //waitForKeyboard();  No se como manejar el foreground todavia
+      key = kb_read();
+
+
+    switch (key) {
+      case -1:
+        return -1;
+      case 0:
+          continue;
+        
+
+      case '\n':
+        ncNewline();
+        buf[charsRead] = 0;
+        return charsRead;
+
+      case 8:
+        if (charsRead > 0 && ncBackspace())
+          charsRead--;
+        break;
+
+      // F1, guarda el estado de los registros en el momento actual
+      /*case 17:
+        loadRegisters(backupRegisters, backupAuxRegisters);
+        break;
+
+      case 18: // F2
+        exit();
+        break;
+
+      case 19: // F3
+        return -1;
+        break;*/
+
+      // shifts izq, der y sus release; y bloq mayus
+      case 11:
+      case 14:
+      case 15:
+      case (char)0xAA:
+      case (char)0xB6:
+        mayus = !mayus;
+        break;
+      
+      default: 
+        if(mayus && key >= 'a' && key <= 'z')
+          key -= 'a' - 'A';
+        if(mayus && key == '6')
+          key = '&';
+        if (charsRead < 100)
+          buf[charsRead] = key;
+        charsRead++;
+        ncPrintChar(key);
+        break;
+    }
+	}
+  buf[count] = 0;
+  return (count >= 100) ? 100 : count;
+}
+
+static int read(unsigned int fd, char *buf, int count)
 {
     uint64_t ref;
     if (buf == NULL)
@@ -122,7 +187,7 @@ static uint64_t read(unsigned int fd, char *buf, uint64_t count)
     {
         return -1;
     }
-    return readFromKeyboard(buf, count, 1);
+    return readFromStdin(buf, count);
 }
 
 static int getCharSys(unsigned int ascii)

@@ -102,8 +102,7 @@ int getAscii(int val) {
 
 int kb_read() {
 	int sc;
-
-		sc = kbReadUntilCode();
+     sc = kbReadUntilCode();
 
 	return getAscii(sc);
 }
@@ -120,11 +119,11 @@ void keyboardDriver(uint64_t * stack) {
      while(keyboardActivated()) {
           c = getKbCode();
      }
-          if (target && !(c & 0x80)) {
-               *target = getAscii(c);
-               if (*target == ALT)
-                    overwriteRegs();
-          }
+     if (target && !(c & 0x80)) {
+          *target = getAscii(c);
+          if (*target == ALT)
+               overwriteRegs();
+     }
           
 
 }
