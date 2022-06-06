@@ -184,7 +184,7 @@ void setupShellCommands()
     loadCommand((void *(*)(void*))&cat,"cat", "prints what its received",0);
     loadCommand((void *(*)(void*))&wc,"wc", "counts the amount of lines inputed ",0);
     loadCommand((void *(*)(void*))&filter,"filter", "prints what its received,excluding vocals",0);
-    loadCommand((void *(*)(void*))&phylo,"philosophers","philosopher problem",0);
+    loadCommand((void *(*)(void*))&phylo,"phylo","philosopher problem",0);
     loadCommand((void *(*)(void*))&memState,"mem","see memory status",0);
     loadCommand((void *(*)(void*))&callKill,"kill","kill a process",1);
     loadCommand((void *(*)())&callNice,"nice","change a process priority",2);

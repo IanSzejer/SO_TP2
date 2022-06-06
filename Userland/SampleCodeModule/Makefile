@@ -18,7 +18,7 @@ all: $(MODULE)
 $(MODULE): $(OBJECTS) $(OBJECTS_ASM) $(OBJECTS_APPS) $(OBJECTS_SCREENMANAGEMENT)
 	@$(LD) $(LDFLAGS) -T sampleCodeModule.ld _loader.o $(filter-out _loader.o,$(OBJECTS)) $(OBJECTS_ASM) $(OBJECTS_APPS) $(OBJECTS_SCREENMANAGEMENT) -o ../$(MODULE)
 
-	@$(LD) $(LDFLAGS) -I./include -T sampleCodeModule.ld _loader.o $(filter-out _loader.o,$(OBJECTS)) $(OBJECTS_ASM) $(OBJECTS_APPS) $(OBJECTS_SCREENMANAGEMENT) --oformat=elf64-x86-64 -o ../0000-sampleCodeModule.elf
+	@$(LD) $(LDFLAGS) -T sampleCodeModule.ld --oformat=elf64-x86-64 _loader.o $(filter-out _loader.o,$(OBJECTS)) $(OBJECTS_ASM) $(OBJECTS_APPS) $(OBJECTS_SCREENMANAGEMENT)  -o ../0000-sampleCodeModule.elf
 
 %.o : %.asm
 	@$(ASM) $(ASMFLAGS) $< -o $@

@@ -6,7 +6,7 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
 
-# Make data base, printed on Mon Jun  6 16:03:15 2022
+# Make data base, printed on Mon Jun  6 18:28:10 2022
 
 # Variables
 
@@ -79,7 +79,7 @@ LESSCLOSE = /usr/bin/lesspipe %s %s
 # environment
 LOGNAME = ianlucklol3
 # environment
-APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
 # environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # automatic
@@ -157,9 +157,9 @@ WSL_DISTRO_NAME = Ubuntu-20.04
 
 # Directories
 
-# . (device 2064, inode 123300): 18 files, no impossibilities.
+# . (device 2064, inode 123300): 19 files, no impossibilities.
 
-# 18 files, no impossibilities in 1 directories.
+# 19 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -277,14 +277,14 @@ userland:
 # No 'vpath' search paths.
 
 # No general ('VPATH' variable) search path.
+
  
+# strcache buffers: 1 (0) / strings = 31 / storage = 302 B / avg = 9 B
+# current buf: size = 8162 B / used = 302 B / count = 31 / avg = 9 B
 
-# strcache buffers: 1 (0) / strings = 30 / storage = 293 B / avg = 9 B
-# current buf: size = 8162 B / used = 293 B / count = 30 / avg = 9 B
-
-# strcache performance: lookups = 56 / hit rate = 46%
+# strcache performance: lookups = 57 / hit rate = 45%
 # hash-table stats:
-# Load=30/8192=0%, Rehash=0, Collisions=10/56=18%
-# Finished Make data base on Mon Jun  6 16:03:15 2022
+# Load=31/8192=0%, Rehash=0, Collisions=10/57=18%
+# Finished Make data base on Mon Jun  6 18:28:10 2022
 
  

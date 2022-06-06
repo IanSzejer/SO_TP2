@@ -36,8 +36,7 @@ static uint64_t findAvailableSpace()
 
 static void initializeSem(uint64_t initValue, int pos, char *semName){
     memcpy(semSpaces[pos].sem.name, semName, strlength(semName)*sizeof(char));
-    semSpaces[pos].sem.value = initValue;
-    semSpaces[pos].sem.lock = 0; // Inicialmente no esta lockeado.
+    semSpaces[pos].sem.lock = initValue; // Inicialmente no esta lockeado.
     semSpaces[pos].sem.firstProcess = NULL;
     semSpaces[pos].sem.lastProcess = semSpaces[pos].sem.firstProcess;
     semSpaces[pos].sem.size = 0;
@@ -153,9 +152,8 @@ uint64_t semWait(char* semName)
     while (_xchg(&sem->lock, 1) != 0)
         ;
 
-    if (sem->value > 0)
+    if (sem->lock > 0)
     {
-        sem->value--;
         _xchg(&sem->lock, 0);
     }
     else
@@ -163,16 +161,14 @@ uint64_t semWait(char* semName)
         uint64_t pid = getPid();
         if (enqeueProcess(pid, sem) == -1)
         {
-            _xchg(&sem->lock, 0);
             return -1;
         }
 
-        _xchg(&sem->lock, 0);
+        //_xchg(&sem->lock, 0);
         if (block(pid) == -1)
         {
             return -1;
         }
-        sem->value--;
     }
     return 0;
 }
@@ -188,20 +184,24 @@ uint64_t semPost(char* semName)
     sem_t *sem = &semSpaces[semIndex].sem;
     while (_xchg(&sem->lock, 1) != 0)
         ;
-    sem->value++;
-    int pid = 0;
-    if (sem->sizeList > 0)
-    {
-        if ((pid = dequeueProcess(sem)) == -1)
+    if(!sem->lock){
+        int pid = 0;
+        if (sem->sizeList > 0)
         {
+            if ((pid = dequeueProcess(sem)) == -1)
+            {
+                return -1;
+            }
             _xchg(&sem->lock, 0);
-            return -1;
+            unblock(pid);
+        }
+        else{
+            _xchg(&sem->lock, 1);
         }
     }
-    _xchg(&sem->lock, 0);
-    unblock(pid) ?: forceTimer();
     return 0;
 }
+// 
 
 
 static uint64_t findSem(char *name)
@@ -294,7 +294,7 @@ int printSem(char* buf,sem_t sem)
         i+=4;
     }
     int c=0;
-    c += numToStr(sem.value,buf);
+    c += numToStr(sem.lock,buf);
     buf+=c;
     *(buf++)='\t';
     *(buf++)='\t';

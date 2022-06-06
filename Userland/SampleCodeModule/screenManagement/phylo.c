@@ -46,6 +46,12 @@ void phylo(int argc, char** argv){
         return;
         
     }
+    waitSem(SEM_PHYL);
+    print("NO lo freno");
+    postSem(SEM_PHYL);
+
+
+    /*
     sem = SEM_PHYL;
 
     seated = 0;
@@ -82,7 +88,7 @@ void phylo(int argc, char** argv){
                 print("Error cerrando semaforo\n");
             return;
         }
-    }
+    }*/
     exit();
 }
 

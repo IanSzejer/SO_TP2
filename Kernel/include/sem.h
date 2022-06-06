@@ -19,7 +19,6 @@ typedef struct
     process_t *firstProcess;
     process_t *lastProcess;  
     uint64_t lock;
-    int value;
     uint64_t size;     
     uint64_t sizeList;
 } sem_t;
