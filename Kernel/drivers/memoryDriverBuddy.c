@@ -1,13 +1,14 @@
-/*#include "memoryDriver.h"
+#ifdef BUDDY
+
+#include "memoryDriver.h"
+
+#define FREE 0
+#define OCCUPIED 1
 
 #define HEADER_SIZE 8
 #define MIN_ALLOC_LOG2 6                     // 64 bytes
 #define MAX_ALLOC_LOG2 (30 - MIN_ALLOC_LOG2) // 1Gb max alloc
 #define BIN_POW(x) (1 << (x))
-#define INITIAL_POSITION 0x1000000
-#define MAX_POSITION 10000
-
-
 
 
 typedef struct list_t
@@ -37,16 +38,16 @@ static void listRemove(list_t *entry);
 static void listPush(list_t *list, list_t *entry);
 static int isEmpty(list_t *list);
 
-static void initializeMem()
+void initMemManager(uint64_t heapInitialPosition,uint64_t maxSizeHeap)
 {
-    base = (list_t *)INITIAL_POSITION;
-    baseSize = MAX_POSITION;
+    base = (list_t *) heapInitialPosition ;
+    baseSize = maxSizeHeap;
     availableMem = baseSize;
     bucketSize = (int)log2(baseSize) - MIN_ALLOC_LOG2 + 1;
 
-    if (bucketSize > MAX_ALLOC_LOG2)
+    if (bucketSize > maxSizeHeap)
     {
-        bucketSize = MAX_ALLOC_LOG2;
+        bucketSize = maxSizeHeap;
     }
 
     for (int i = 0; i < bucketSize; i++)
@@ -59,10 +60,9 @@ static void initializeMem()
 
 void *mallocFun(uint64_t nbytes)
 {
-    if(base==NULL)
-        initializeMem();
     if (nbytes == 0)
         return NULL;
+
     uint64_t totalSize;
     if ((totalSize = nbytes + (sizeof(list_t) * 2)) > baseSize) // ...
         return NULL;
@@ -79,17 +79,18 @@ void *mallocFun(uint64_t nbytes)
         node->bucketLevel--;
         addBucket(&buckets[freeBucketLevel - 1], getBuddy(node), freeBucketLevel - 1);
     }
-    node->occupied = 1;
+    node->occupied = OCCUPIED;
     availableMem -= BIN_POW(MIN_ALLOC_LOG2 + bucketLevel);
     return (void *)++node;
 }
 
 void freeFun(void *block)
 {
-    if (block == NULL) // || (uint64_t)ap % HEADER_SIZE
+    if (block == NULL) 
         return;
+
     list_t *list = (list_t *)block - 1;
-    list->occupied = 0;
+    list->occupied = FREE;
     availableMem += BIN_POW(MIN_ALLOC_LOG2 + list->bucketLevel);
 
     list_t *buddy = getBuddy(list);
@@ -124,7 +125,7 @@ static int copyAnswer(char* phrase, long memoryNum, char* buf) {
 static void addBucket(list_t *list, list_t *entry, uint64_t level)
 {
     entry->bucketLevel = level;
-    entry->occupied = 0;
+    entry->occupied = FREE;
     listPush(list, entry);
 }
 
@@ -196,7 +197,7 @@ static void listInit(list_t *list)
 {
     list->prev = list;
     list->next = list;
-    list->occupied = 1;
+    list->occupied = FREE;
 }
 
 static void listPush(list_t *list, list_t *entry)
@@ -229,4 +230,5 @@ static int isEmpty(list_t *list)
 {
     return list->prev==list;
 }
-*/
+
+#endif

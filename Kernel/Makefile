@@ -1,5 +1,4 @@
 include Makefile.inc
-
 KERNEL=kernel.bin
 
 SOURCES=$(wildcard *.c)
@@ -16,6 +15,9 @@ OBJECTS_DRIVER=$(SOURCES_DRIVER:.c=.o)
 LOADERSRC=loader.asm
 
 LOADEROBJECT=$(LOADERSRC:.asm=.o)
+
+MEM_MANAGER = MEM_MANAGER_PROPIO
+
 STATICLIBS=
 
 all: $(KERNEL)
@@ -26,7 +28,7 @@ $(KERNEL): $(LOADEROBJECT) $(OBJECTS) $(STATICLIBS) $(OBJECTS_ASM) $(OBJECTS_INT
 	@$(LD) $(LDFLAGS) -T kernel.ld --oformat=elf64-x86-64 -o kernel.elf $(LOADEROBJECT) $(OBJECTS) $(OBJECTS_ASM) $(OBJECTS_INT) $(OBJECTS_DRIVER) $(STATICLIBS)
 
 %.o: %.c
-	@$(GCC) $(GCCFLAGS) -I./include -I./interrupts -I./drivers -c $< -o $@
+	@$(GCC) $(GCCFLAGS) -D $(MEM_MANAGER) -I./include -I./interrupts -I./drivers -c $< -o $@ 
 
 %.o : %.asm
 	@$(ASM) $(ASMFLAGS) $< -o $@
