@@ -104,8 +104,8 @@ static int addPhylo(int pIndex){
     uintToBase(seated, currentSeated, 10);
     char * argv[] = {"phylo", currentSeated};
     phylos[pIndex].state = THINK;
-
-    if((phylos[pIndex].pid = new_process((void *(*)(void*))&phyloProcess,argv,1,"phylo")) == 0){
+    int params[2]={1,0};
+    if((phylos[pIndex].pid = new_process((void *(*)(void*))&phyloProcess,argv,params,"phylo")) == 0){
         print("Error creando proceso filosofo");
         return -1;
     }

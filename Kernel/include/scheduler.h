@@ -35,7 +35,7 @@ typedef struct pcb_t
     uint64_t tickets;
     char argv[6][21];
     states state;
-     context; // 1 -> FOREGROUND, 0 -> BACKGROUND
+    int context; // 1 -> FOREGROUND, 0 -> BACKGROUND
     FileDescriptorsTable fd[FD_AMOUNT_PER_PROCESS];            //Maximo 10 fd 
     uint64_t waitingProcess;
     uint64_t prevForegroundPid;

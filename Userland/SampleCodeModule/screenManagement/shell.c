@@ -404,7 +404,8 @@ int theShell(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
                 scanf(choose);
                 verify = cmdIndex(choose,args);
         }
-        new_process(shellCommands[verify].shellf,args,shellCommands[verify].argAmount,shellCommands[verify].name,shellCommands[verify].procContext);       //DEvuelve el pid
+        int params[2]={shellCommands[verify].argAmount,shellCommands[verify].procContext};
+        new_process(shellCommands[verify].shellf,args,params,shellCommands[verify].name);       //DEvuelve el pid
     }
     return 1;
 }

@@ -26,7 +26,7 @@ extern void get_memory(unsigned int * p);
 extern void *malloc(size_t size);
 extern void free(void *ptr);
 extern void mem_state();
-extern uint64_t new_process(void *(*funcion)(void *), void *argv, int argc,char* name,int context);
+extern uint64_t new_process(void *(*funcion)(void *), void *argv, int argc[2],char* name);
 extern void end_process(uint64_t pid);
 extern void kill(uint64_t pid);
 extern int getPid();

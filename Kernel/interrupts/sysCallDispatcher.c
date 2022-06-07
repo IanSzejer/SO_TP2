@@ -29,7 +29,7 @@ static long timerTick(void (*f)());
 static void *malloc(size_t size);
 static void free(void *ptr);
 static void memState();
-static uint64_t newProcess(void *(*funcion)(void *), void *argv, int argc,char* name,int context);
+static uint64_t newProcess(void *(*funcion)(void *), void *argv, int argc[2],char* name);
 static void endProcess(uint64_t pid);
 static void kill(uint64_t pid);
 static void getAllProcesses();
@@ -208,9 +208,9 @@ static void memState()
     write(STDOUT, buf, MAX_STR_LENGTH, WHITE);
 }
 
-static uint64_t newProcess(void *(*funcion)(void *), void *argv, int argc,char* name,int context)
+static uint64_t newProcess(void *(*funcion)(void *), void *argv, int argc[2],char* name)
 {
-    return createProcess(funcion,argv,argc,name,context);
+    return createProcess(funcion,argv,argc[0],name,argc[1]);
 }
 
 static void endProcess(uint64_t pid)
