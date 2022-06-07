@@ -4,7 +4,7 @@
 #define MIN_PHYL 2 
 #define INIT_PHYL 5
 #define SEM_PHYL "semPhylos"
-#define LENGTH 10
+#define LENGTH 15
 #define QUANTUM 3
 
 
@@ -46,12 +46,6 @@ void phylo(int argc, char** argv){
         return;
         
     }
-    waitSem(SEM_PHYL);
-    print("NO lo freno");
-    postSem(SEM_PHYL);
-
-
-    /*
     sem = SEM_PHYL;
 
     seated = 0;
@@ -88,7 +82,7 @@ void phylo(int argc, char** argv){
                 print("Error cerrando semaforo\n");
             return;
         }
-    }*/
+    }
     exit();
 }
 

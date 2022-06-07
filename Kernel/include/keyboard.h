@@ -4,11 +4,12 @@
 #include "chardefs.h"
 #include "lib.h"
 #include <videoD.h>
+#include "scheduler.h"
 
+char* kb_read();
 
-int kb_read();
+void keyboard_handler();
 
-void keyboardDriver(uint64_t * stack);
 
 int readFromKeyboard(char * buf, uint64_t count, int ascii);
 void set_kb_target(int * var);

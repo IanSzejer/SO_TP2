@@ -1,12 +1,9 @@
 #ifndef PHYLO_H
 #define PHYLO_H
 #include "stdinout.h"
-typedef enum
-{
-    FOREGROUND,
-    BACKGROUND,
+#define FOREGROUND 1
+#define BACKGROUND 0
 
-} context;
 void phylo(int argc, char **argv);
 
 #endif

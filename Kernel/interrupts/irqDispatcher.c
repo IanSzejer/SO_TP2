@@ -30,5 +30,5 @@ void int_20(uint64_t *stack)
 void int_21(uint64_t *stack)
 {
 	
-	keyboardDriver(stack);
+	keyboard_handler();
 }

@@ -13,6 +13,7 @@ int tickCountScheduler;
 static int ready;
 static ProcessList* firstList=NULL;
 static ProcessNode* currentProcess=NULL;
+static ProcessNode* foregroundProcess=NULL;
 static ProcessNode* dummyProcess=NULL;
 static uint64_t pidCounter = 1;
 static int strlength(char* text);
@@ -53,7 +54,7 @@ void dummy(){
 
 void initializeScheduler(void* (*funcion)(void*)) {
     _cli();
-    createProcess(funcion,NULL,0,"shell");
+    createProcess(funcion,NULL,0,"shell",FOREGROUND);
     _sti();
 }
 
@@ -62,7 +63,7 @@ void forceTickCount(){
 }
 // Como argumento recibe un puntero a funcion, como es un proceso no se que parametros recibe
 // Por ahora digo que devuelve void*, por decreto recibe hasta 3 argumentos de tamaño uint64_t
-uint64_t createProcess(void* (*funcion)(void*), char* argv, int argc,char* processName) {
+uint64_t createProcess(void* (*funcion)(void*), char* argv, int argc,char* processName,int processContext) {
     int c=0,j=0;
     char arguments[6][21];
     while(c < argc){
@@ -95,7 +96,10 @@ uint64_t createProcess(void* (*funcion)(void*), char* argv, int argc,char* proce
     newProcess->pcb.fd[1].reference = STDOUT;
     newProcess->pcb.fd[2].fd = 2;
     newProcess->pcb.fd[2].reference = STDERR;
+    newProcess->pcb.waitingProcess=0;
     newProcess->next=NULL;
+    newProcess->pcb.context=processContext;
+    newProcess->pcb.prevForegroundPid=0;
     if (currentProcess==NULL)
         newProcess->pcb.ppid=0;//Caso solo de la shell
     else{
@@ -107,7 +111,13 @@ uint64_t createProcess(void* (*funcion)(void*), char* argv, int argc,char* proce
     // faltan cosas del pcb pero queria verlo con ustedes
     addProcess(newProcess);
     // asignar prioridad
-    block(newProcess->pcb.ppid);     //Bloqueo el proceso hijo hasta que el hijo termine
+    if(processContext==FOREGROUND){
+        if(foregroundProcess!=NULL){
+            newProcess->pcb.prevForegroundPid=foregroundProcess->pcb.pid;
+            block(newProcess->pcb.prevForegroundPid);     //Bloqueo el padre de front hasta q termine
+        }
+        foregroundProcess=newProcess;
+    }
     return newProcess->pcb.pid;
 }
 /*  
@@ -214,7 +224,10 @@ static ProcessNode* removeRecursiveNode(ProcessNode* node, ProcessNode* node2,Pr
         if(list->last==node){        //Tengo que modificar el last
             list->last=prevNode;
         }
-        unblock(node->pcb.ppid);
+        if(node->pcb.context==FOREGROUND){//Si era de front, libero el proceso que lo creo
+            unblock(node->pcb.prevForegroundPid);
+            foregroundProcess=findNode(node->pcb.prevForegroundPid);
+        }
         freeFun(node->pcb.processStartingMem);     //Libero el stack del proceso
         freeFun(node);              //Libero el espacio reservado para el nodo
         list->size--;
@@ -282,11 +295,17 @@ static void initiateFd(ProcessNode* newProcess) {
 
 uint64_t killProcess(uint64_t pid)
 {  
+    ProcessNode* process= findNode(pid);
     uint16_t done = changeState(pid, KILLED);
+    if(process->pcb.waitingProcess>0){
+        unblock(process->pcb.waitingProcess);
+        process->pcb.waitingProcess=0;
+    }
     if (pid == currentProcess->pcb.pid)
         forceTimer();
     return done;
 }
+
 
 uint64_t unblock(uint64_t pid) {
     if (pid < FIRST_PID)
@@ -563,4 +582,10 @@ int dup(uint64_t fdOld,uint64_t fdNew){
         return -1;
     currentProcess->pcb.fd[fdNew].reference=currentProcess->pcb.fd[fdOld].reference;
     return 0;
+}
+
+void waitProcess(uint64_t pid){
+    ProcessNode* node= findNode(pid);
+    node->pcb.waitingProcess=currentProcess->pcb.pid;
+    block(currentProcess->pcb.pid);
 }

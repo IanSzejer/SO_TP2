@@ -6,15 +6,10 @@
 #define STDERR 2
 #define MAX_NAME_SCHED 100
 #define MAX_PRIO 10
+#define FOREGROUND 1
+#define BACKGROUND 0
 
 
-
-typedef enum
-{
-    FOREGROUND,
-    BACKGROUND,
-
-} context;
 
 typedef enum
 {
@@ -40,8 +35,10 @@ typedef struct pcb_t
     uint64_t tickets;
     char argv[6][21];
     states state;
-    context context; // 1 -> FOREGROUND, 0 -> BACKGROUND
+     context; // 1 -> FOREGROUND, 0 -> BACKGROUND
     FileDescriptorsTable fd[FD_AMOUNT_PER_PROCESS];            //Maximo 10 fd 
+    uint64_t waitingProcess;
+    uint64_t prevForegroundPid;
 } pcb_t;
 
 
@@ -69,7 +66,7 @@ void* tickInterrupt();
 uint64_t getProcessRunning();
 void addPipe(uint64_t fd[2],uint64_t pid,uint64_t pipeRef,uint64_t pipeWriteRef);
 void initializeScheduler(void* (*funcion)(void*));
-uint64_t createProcess(void* (*funcion)(void*), char* argv, int argc,char* processName);
+uint64_t createProcess(void* (*funcion)(void*), char* argv, int argc,char* processName,int processContext);
 void addProcess(ProcessNode *nodeToAdd);
 void removeProcess(uint64_t pid);
 uint64_t killProcess(uint64_t pid);
@@ -82,5 +79,6 @@ uint64_t getFdRef(uint64_t fd);
 int dup(uint64_t fdOld,uint64_t fdNew);
 void* dummyinterrupt(void* rsp);        //Dummy para probar
 void forceTickCount();
+void waitProcess(uint64_t pid);
 
 #endif

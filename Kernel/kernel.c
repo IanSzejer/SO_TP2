@@ -70,8 +70,5 @@ int main()
 	initializeScheduler(sampleCodeModuleAddress);	
 	//((EntryPoint)sampleCodeModuleAddress)();
 	load_idt();
-	while(1){
-		
-	}
 	return 0;
 }

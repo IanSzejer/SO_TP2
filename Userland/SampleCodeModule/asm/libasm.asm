@@ -9,10 +9,6 @@ GLOBAL get_time
 
 GLOBAL timer_tick
 
-GLOBAL set_kb_target
-
-GLOBAL get_date
-
 GLOBAL get_regs
 
 GLOBAL get_memory
@@ -63,6 +59,7 @@ GLOBAL dup2
 GLOBAL my_yield
 GLOBAL exit
 
+GLOBAL waitProcess
 %macro pushStateSysCall 0
 	push rbx
 	push rcx
@@ -181,90 +178,78 @@ timer_tick:
     ; pop rbp
     ; ret
 
-set_kb_target:
+waitProcess:
     sysCall 6
-    ; push rbp
-    ; mov rbp, rsp
-    ; push rbx
-    ; mov rax, 9
-    ; int 80h
-    ; pop rbx
-    ; mov rsp, rbp
-    ; pop rbp
-    ; ret
-
-get_date:
-    sysCall 7
 
 
 get_regs:
-    sysCall 8
+    sysCall 7
 
 
 malloc:
-    sysCall 9
+    sysCall 8
 
 free:
-    sysCall 10
+    sysCall 9
 
 mem_state:
-    sysCall 11
+    sysCall 10
 
 new_process:
-    sysCall 12
+    sysCall 11
 
 end_process:
-    sysCall 13
+    sysCall 12
 
 kill:
-    sysCall 14
+    sysCall 13
 
 get_all_processes:
-    sysCall 15
+    sysCall 14
 
 nice:
-    sysCall 16
+    sysCall 15
 
 change_state:
-    sysCall 17
+    sysCall 16
 
 changeProcesses:
-    sysCall 18
+    sysCall 17
 
 createSemaphore:
-    sysCall 19
+    sysCall 18
 
 openSemaphore:
-    sysCall 20
+    sysCall 19
 
 closeSemaphore:
-    sysCall 21
+    sysCall 20
 
 getSemaphores:
-    sysCall 22
+    sysCall 21
 
 waitSem:
-    sysCall 23
+    sysCall 22
 
 postSem:
-    sysCall 24
+    sysCall 23
 
 createPipe:
-    sysCall 25
+    sysCall 24
 
 openPipe:
-    sysCall 26
+    sysCall 25
 
 get_pipes:
-    sysCall 27
+    sysCall 26
 
 get_pid_sys:
-    sysCall 28
+    sysCall 27
 
 dup2:
-    sysCall 29
+    sysCall 28
 
 my_yield:
-    sysCall 30
+    sysCall 29
 exit:
-    sysCall 31
+    sysCall 30

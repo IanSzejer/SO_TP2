@@ -19,16 +19,14 @@ extern int split_screen(int screens, int screen); // retorna 1 si la seleccion e
 extern int set_screen(int screen);  // retorna 1 si la seleccion es valida. -1 si no
 extern int get_char(int ascii);
 extern void clear_line();
-extern void get_time(char * buf);
 extern long timer_tick(void (*f)());
-extern void set_kb_target(int * var);
 extern void get_date(char * buf);
 extern void get_regs(char ** buf);
 extern void get_memory(unsigned int * p);
 extern void *malloc(size_t size);
 extern void free(void *ptr);
 extern void mem_state();
-extern uint64_t new_process(void *(*funcion)(void *), void *argv, int argc,char* name);
+extern uint64_t new_process(void *(*funcion)(void *), void *argv, int argc,char* name,int context);
 extern void end_process(uint64_t pid);
 extern void kill(uint64_t pid);
 extern int getPid();
@@ -49,6 +47,8 @@ extern int dup2(uint64_t oldFd,uint64_t newFd);
 extern int get_all_processes();
 extern void my_yield();
 extern void exit();
+extern void waitProcess(uint64_t pid);
+
 
 void print(char * string);
 int strlength(char * string);
@@ -75,5 +75,5 @@ long secondsElapsed();
 int strcat(char * target, char * source);
 int numToStr(int num, char* str, int base);
 uint64_t uintToBase(uint64_t value, char *buffer, uint64_t base);
-void scanf(char* buf);
+int scanf(char* buf);
 #endif

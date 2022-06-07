@@ -5,6 +5,7 @@
 #define SHELL_BUFFER_SIZE 128
 #define ARG_AMOUNT 6
 #define ARG_SIZE 21
+
 typedef struct
 {
     char line[SHELLW];
@@ -17,10 +18,11 @@ typedef struct
     char *name;
     char *description;
     int argAmount;
+    int procContext;
 } t_shellc;
 
 int cmdIndex(char *buf,char args[ARG_AMOUNT][ARG_SIZE]);
-void loadCommand(void *(*f)(void *), char *name, char *desc,int argAmount);
+void loadCommand(void *(*f)(void *), char *name, char *desc,int argAmount,int procContext);
 void copyOneLineUp(shell_line shellBuffer[SHELLH]);
 void copyCommandDescriptor(char *buf, t_shellc cmd);
 void copyLinesToShellOutput(char lines[][SHELLW], int qty);
@@ -82,16 +84,7 @@ void updateConsoleMsg(char *s)
     strcpy(consoleMsg, s);
 }
 
-void printDateTime(int argc,char argv[ARG_AMOUNT][ARG_SIZE])
-{
-    char buf[20] = {0};
-    get_date(buf);
-    buf[8] = buf[10] = ' ';
-    buf[9] = '-';
-    get_time(&buf[11]);
-    updateConsoleMsg(buf);
-    exit();
-}
+
 
 void help(int argc,char argv[ARG_AMOUNT][ARG_SIZE])
 {
@@ -181,30 +174,29 @@ void copyLinesToShellOutput(char lines[][SHELLW], int qty)
 
 void setupShellCommands()
 {
-    loadCommand((void *(*)(void*))&printDateTime, "datetime", "Displays the date and time",0);
-    loadCommand((void *(*)(void*))&help, "help", "Shows a list of available commands",0);
-    loadCommand((void *(*)(void*))&inforeg, "inforeg", "Shows the value of all registers",0);
-    loadCommand((void *(*)(void*))&loop,"loop","prints a message with a delay inputed by user",1);
-    loadCommand((void *(*)(void*))&cat,"cat", "prints what its received",0);
-    loadCommand((void *(*)(void*))&wc,"wc", "counts the amount of lines inputed ",0);
-    loadCommand((void *(*)(void*))&filter,"filter", "prints what its received,excluding vocals",0);
-    loadCommand((void *(*)(void*))&phylo,"phylo","philosopher problem",0);
-    loadCommand((void *(*)(void*))&memState,"mem","see memory status",0);
-    loadCommand((void *(*)(void*))&callKill,"kill","kill a process",1);
-    loadCommand((void *(*)())&callNice,"nice","change a process priority",2);
-    loadCommand((void *(*)(void*))&changeState,"block or unblock","block or unblock a process",2);
-    loadCommand((void *(*)(void*))&getPipes,"pipe","see pipes status",0);
-    loadCommand((void *(*)(void*))&getAllProcesses,"ps","see processes status",0);
-    loadCommand((void *(*)(void*))&test_sync,"synctest","executes sync test",2);
-    loadCommand((void *(*)(void*))&test_mm,"memtest","executes memory manager test",1);
-    loadCommand((void *(*)(void*))&test_prio,"priotest","executes prio test",0);
-    loadCommand((void *(*)(void*))&test_processes,"processtest","executes process test",1);
+    loadCommand((void *(*)(void*))&help, "help", "Shows a list of available commands",0,BACKGROUND);
+    loadCommand((void *(*)(void*))&inforeg, "inforeg", "Shows the value of all registers",0,BACKGROUND);
+    loadCommand((void *(*)(void*))&loop,"loop","prints a message with a delay inputed by user",1,BACKGROUND);
+    loadCommand((void *(*)(void*))&cat,"cat", "prints what its received",0,FOREGROUND);
+    loadCommand((void *(*)(void*))&wc,"wc", "counts the amount of lines inputed ",0,FOREGROUND);
+    loadCommand((void *(*)(void*))&filter,"filter", "prints what its received,excluding vocals",0,FOREGROUND);
+    loadCommand((void *(*)(void*))&phylo,"phylo","philosopher problem",0,FOREGROUND);
+    loadCommand((void *(*)(void*))&memState,"mem","see memory status",0,BACKGROUND);
+    loadCommand((void *(*)(void*))&callKill,"kill","kill a process",1,BACKGROUND);
+    loadCommand((void *(*)())&callNice,"nice","change a process priority",2,BACKGROUND);
+    loadCommand((void *(*)(void*))&changeState,"block or unblock","block or unblock a process",2,BACKGROUND);
+    loadCommand((void *(*)(void*))&getPipes,"pipe","see pipes status",0,BACKGROUND);
+    loadCommand((void *(*)(void*))&getAllProcesses,"ps","see processes status",0,BACKGROUND);
+    loadCommand((void *(*)(void*))&test_sync,"synctest","executes sync test",2,BACKGROUND);
+    loadCommand((void *(*)(void*))&test_mm,"memtest","executes memory manager test",1,BACKGROUND);
+    loadCommand((void *(*)(void*))&test_prio,"priotest","executes prio test",0,BACKGROUND);
+    loadCommand((void *(*)(void*))&test_processes,"processtest","executes process test",1,BACKGROUND);
 }
 
 
 void cat(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
-     char buffer[100];
-    while(system_read(STDIN,buffer,100)>0)
+    char buffer[100];
+    while(scanf(buffer)>0)
     {
         int i=0;
         while(buffer[i]){
@@ -214,7 +206,6 @@ void cat(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
         }
         print("\n");
     }
-    
     exit();
     
 }
@@ -272,12 +263,13 @@ void loop(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
 }
 
 
-void loadCommand(void *(*f)(void *), char *name, char *desc,int argAmount)
+void loadCommand(void *(*f)(void *), char *name, char *desc,int argAmount,int procContext)
 {
     shellCommands[cmdCounter].shellf = f;
     shellCommands[cmdCounter].name = name;
     shellCommands[cmdCounter].description = desc;
     shellCommands[cmdCounter].argAmount= argAmount;
+    shellCommands[cmdCounter].procContext= procContext;
     cmdCounter++;
 }
 
@@ -412,7 +404,7 @@ int theShell(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
                 scanf(choose);
                 verify = cmdIndex(choose,args);
         }
-        new_process(shellCommands[verify].shellf,args,shellCommands[verify].argAmount,shellCommands[verify].name);       //DEvuelve el pid
+        new_process(shellCommands[verify].shellf,args,shellCommands[verify].argAmount,shellCommands[verify].name,shellCommands[verify].procContext);       //DEvuelve el pid
     }
     return 1;
 }

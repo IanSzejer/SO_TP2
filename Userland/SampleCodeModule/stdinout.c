@@ -15,8 +15,8 @@ void printColor(char * string, char color) {
     	
 }
 
-void scanf(char* buf){
-    system_read(STDIN, buf, 128);
+int scanf(char* buf){
+    return system_read(STDIN, buf, 128);
 }
 
 void print(char * string) {

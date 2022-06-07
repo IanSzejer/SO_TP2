@@ -46,6 +46,10 @@ int keyboardActivated();
 
 int getKbCode();
 
+int sizeBuffer();
+
+void resetBuffer();
+
 extern void infoReg(char ** buf);
 
 uint32_t uintToBase(uint64_t value, char * buffer, uint32_t base);
@@ -62,5 +66,7 @@ int strcmp(char *X, char *Y);
 uint64_t strlen(char* text,uint64_t size);
 
 uint64_t createContext(uint64_t stack,void* (*funcion)(void*),uint32_t argc,char arguments[6][21]);
+
+
 
 #endif

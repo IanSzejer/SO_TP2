@@ -9,6 +9,7 @@
 #include "scheduler.h"
 #include "pipeManager.h"
 #include "sem.h"
+#include "interrupts.h"
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
@@ -25,11 +26,10 @@ static void clear();
 static int getCharSys(unsigned int ascii);
 static void getTime(char *buf);
 static long timerTick(void (*f)());
-static void getDate(char *buf);
 static void *malloc(size_t size);
 static void free(void *ptr);
 static void memState();
-static uint64_t newProcess(void *(*funcion)(void *), void *argv, int argc,char* name);
+static uint64_t newProcess(void *(*funcion)(void *), void *argv, int argc,char* name,int context);
 static void endProcess(uint64_t pid);
 static void kill(uint64_t pid);
 static void getAllProcesses();
@@ -40,8 +40,8 @@ static int createSemaphore(char* name,uint64_t value);
 static int openSemaphore(char* name,uint64_t value);
 static int closeSemaphore(char* semName);
 static void getSemaphores();
-static int wait(char* semaphore);
-static int post(char* semaphore);
+static int waitSem(char* semaphore);
+static int postSem(char* semaphore);
 static int createPipe(int pipeFd[2]);
 static void openPipe(void *ptr);
 static void getPipes();
@@ -49,14 +49,15 @@ static int getPidSys();
 static int dup2(uint64_t oldFd, uint64_t newFd);
 static void myYield();
 static void exit();
+static void wait(uint64_t pid);
 
 static SysCallR sysCalls[255] = {(SysCallR)&read, (SysCallR)&write, (SysCallR)&clear, (SysCallR)&getCharSys, (SysCallR)&getTime,
                                  (SysCallR)&timerTick,
-                                 (SysCallR)&set_kb_target, (SysCallR)&getDate, (SysCallR)&getRegs, (SysCallR)&malloc, (SysCallR)&free,
+                                 (SysCallR)&wait, (SysCallR)&getRegs, (SysCallR)&malloc, (SysCallR)&free,
                                  (SysCallR)&memState, (SysCallR)&newProcess, (SysCallR)&endProcess, (SysCallR)&kill, (SysCallR)&getAllProcesses, (SysCallR)&nice,
                                  (SysCallR)&changeState, (SysCallR)&changeProcesses, (SysCallR)&createSemaphore, (SysCallR)&openSemaphore,
                                  (SysCallR)&closeSemaphore, (SysCallR)&getSemaphores,
-                                 (SysCallR)&wait, (SysCallR)&post, (SysCallR)&createPipe, (SysCallR)&openPipe,
+                                 (SysCallR)&waitSem, (SysCallR)&postSem, (SysCallR)&createPipe, (SysCallR)&openPipe,
                                  (SysCallR)&getPipes,(SysCallR)&getPidSys,(SysCallR)&dup2, (SysCallR)&myYield, (SysCallR)&exit};
 
 uint64_t sysCallDispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_t rax)
@@ -113,67 +114,24 @@ static long write(uint64_t fd, char *buf, int count, int color)
 }
 
 static int readFromStdin(char* buf,uint64_t count){
-    int charsRead=0;
-    char key;
-    while (charsRead < count || count == -1) {
-
-      //waitForKeyboard();  No se como manejar el foreground todavia
-      key = kb_read();
-
-
-    switch (key) {
-      case -1:
-        return -1;
-      case 0:
-          continue;
+    char* actualBuffer;
+    int sizeRead;
+    int i=0;
+    _sti();
+    do{
         
-
-      case '\n':
-        ncNewline();
-        buf[charsRead] = 0;
-        return charsRead;
-
-      case 8:
-        if (charsRead > 0 && ncBackspace())
-          charsRead--;
-        break;
-
-      // F1, guarda el estado de los registros en el momento actual
-      /*case 17:
-        loadRegisters(backupRegisters, backupAuxRegisters);
-        break;
-
-      case 18: // F2
-        exit();
-        break;
-
-      case 19: // F3
-        return -1;
-        break;*/
-
-      // shifts izq, der y sus release; y bloq mayus
-      case 11:
-      case 14:
-      case 15:
-      case (char)0xAA:
-      case (char)0xB6:
-        mayus = !mayus;
-        break;
-      
-      default: 
-        if(mayus && key >= 'a' && key <= 'z')
-          key -= 'a' - 'A';
-        if(mayus && key == '6')
-          key = '&';
-        if (charsRead < 100)
-          buf[charsRead] = key;
-        charsRead++;
-        ncPrintChar(key);
-        break;
+        //waitForKeyboard();  No se como manejar el foreground todavia
+        actualBuffer = kb_read();
+        _hlt();
+        
+	}while ((sizeRead = sizeBuffer()) < count && actualBuffer[sizeRead - 1] != '\n');
+    _cli();
+    for (; i < count && i < sizeRead-1; i++) {
+            buf[i] = actualBuffer[i];
     }
-	}
-  buf[count] = 0;
-  return (count >= 100) ? 100 : count;
+    resetBuffer();
+    buf[i] = 0;
+    return i;
 }
 
 static int read(unsigned int fd, char *buf, int count)
@@ -194,15 +152,13 @@ static int read(unsigned int fd, char *buf, int count)
 
 static int getCharSys(unsigned int ascii)
 {
-    int a;
-    for (int i = 0; i < 1; i++)
+    int a=1;
+    /*for (int i = 0; i < 1; i++)
     {
         a = kb_read();
-        if (a == ALT)
-            overwriteRegs();
         if (ascii && !PRINTABLE(a))
             i--;
-    }
+    }*/
     return a;
 }
 
@@ -233,29 +189,7 @@ static void getTime(char *buf)
     buf[8] = 0;
 }
 
-static void getDate(char *buf)
-{
-    buf[0] = buf[3] = '0';
-    buf[2] = buf[5] = '/';
 
-    int m = month();
-
-    if (m < 10)
-        numToStr(m, &buf[1]);
-    else
-        numToStr(m, &buf[0]);
-
-    int d = day();
-
-    if (d < 10)
-        numToStr(d, &buf[4]);
-    else
-        numToStr(d, &buf[3]);
-
-    int y = year();
-    numToStr(y, &buf[6]);
-    buf[8] = 0;
-}
 
 static void *malloc(size_t size)
 {
@@ -274,9 +208,9 @@ static void memState()
     write(STDOUT, buf, MAX_STR_LENGTH, WHITE);
 }
 
-static uint64_t newProcess(void *(*funcion)(void *), void *argv, int argc,char* name)
+static uint64_t newProcess(void *(*funcion)(void *), void *argv, int argc,char* name,int context)
 {
-    return createProcess(funcion,argv,argc,name);
+    return createProcess(funcion,argv,argc,name,context);
 }
 
 static void endProcess(uint64_t pid)
@@ -339,12 +273,12 @@ static void getSemaphores()
     sem(buf);
     write(STDOUT, buf, MAX_STR_LENGTH, WHITE);
 }
-static int wait(char* semaphore)
+static int waitSem(char* semaphore)
 {
     return semWait(semaphore);
 }
 
-static int post(char* semaphore)
+static int postSem(char* semaphore)
 {
     return semPost(semaphore);
 }
@@ -383,4 +317,8 @@ static void myYield(){
 
 static void exit(){
     killProcess(getProcessRunning());
+}
+
+static void wait(uint64_t pid){
+    waitProcess(pid);
 }
