@@ -8,7 +8,7 @@
 #define MAX_PRIO 10
 #define FOREGROUND 1
 #define BACKGROUND 0
-
+#include "memoryDriver.h"
 
 
 typedef enum

@@ -68,5 +68,6 @@ uint64_t test_sync(uint64_t argc, char *argv[]){ //{n, use_sem, 0}
 
   print("Final value: %d\n");
 
+  exit();
   return 0;
 }

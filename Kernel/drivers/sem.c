@@ -1,7 +1,6 @@
 #include "../include/sem.h"
 #include "../include/scheduler.h"
 #include "../include/lib.h"
-#include "../include/memoryDriverPropio.h"
 static semaphore_t semSpaces[MAX_SEM];
 static void initSems();
 static uint64_t findAvailableSpace();

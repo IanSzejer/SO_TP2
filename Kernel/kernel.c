@@ -64,7 +64,7 @@ int main()
 {		
 	//setExceptionRebootPoint((uint64_t)sampleCodeModuleAddress, getStack());
 	
-	initMemManager(heapModuleAdress,maxSize);
+	initMemManager((uint64_t)heapModuleAdress,(uint64_t)maxSize);
 	ncClear();
 	
 	initializeScheduler(sampleCodeModuleAddress);	

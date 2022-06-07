@@ -1,9 +1,9 @@
 #include "../include/lib.h"
-#include "../include/memoryDriverPropio.h"
 #include "../include/scheduler.h"
 #include "interrupts.h"
 #include "videoD.h"
 #include "../include/time.h"
+
 #define MAX_SIZE 200
 #define FIRST_PID 1
 #define PROCESS_MEM_SIZE 10000 // El stack del proceso sera de 10000 bits
@@ -65,22 +65,23 @@ void forceTickCount(){
 // Por ahora digo que devuelve void*, por decreto recibe hasta 3 argumentos de tamaño uint64_t
 uint64_t createProcess(void* (*funcion)(void*), char* argv, int argc,char* processName,int processContext) {
     int c=0,j=0;
-    char arguments[6][21];
+    char** arguments = (char**)mallocFun(argc*sizeof(char*));
     while(c < argc){
         int k=0;
+        arguments[c]=(char*)mallocFun(21*sizeof(char));
         while(argv[j]){
-            arguments[c][k]=argv[j];
+            
+            *(arguments[c]+k)=argv[j];
             k++;
             j++;
         }
-        arguments[c][k] = 0;
+        *(arguments+k) = 0;
         j++;
         c++;
     }
     void* stack = mallocFun(PROCESS_MEM_SIZE);
     
-    void* stackTopPtr =(void*) createContext((uint64_t)stack + PROCESS_MEM_SIZE, funcion, argc, arguments);
-
+    void* stackTopPtr =(void*) createContext((uint64_t)stack + PROCESS_MEM_SIZE, funcion, argc,(char (*)[21]) arguments);
     ProcessNode* newProcess =(ProcessNode*) mallocFun(sizeof(ProcessNode));
     newProcess->pcb.rbp=stack+PROCESS_MEM_SIZE-1;
     memcpy(newProcess->pcb.name,processName,strlength(processName)*sizeof(char));

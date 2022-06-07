@@ -37,52 +37,12 @@ void changeState(int argc,char argv[ARG_AMOUNT][ARG_SIZE]);
 void getPipes(int argc,char argv[ARG_AMOUNT][ARG_SIZE]);
 void getAllProcesses(int argc,char argv[ARG_AMOUNT][ARG_SIZE]);
 
-
-static char buffer1[32] = {0};
-static char buffer2[32] = {0};
-int buf1Size = 0;
-int buf2Size = 0;
-static char consoleMsg1[80] = {0};
-static char consoleMsg2[80] = {0};
-char *consoleMsg = consoleMsg1;
-static uint8_t *const video = (uint8_t *)0xB8000;
 static int cmdCounter = 0;
 int currentShell = 0;
-static int flag = 1;
 
-static shell_line shellBuffer1[SHELLH];
-static shell_line shellBuffer2[SHELLH];
 
-static int buffer1Lines = 0;
-static int buffer2Lines = 0;
 
 static t_shellc shellCommands[10] = {{0, 0, 0}};
-
-void printShell(char *buffer, shell_line shellBuffer[SHELLH])
-{
-    for (int i = 0; i < SHELLH; i++)
-    {
-        if (shellBuffer[i].line[0] == 0)
-            putChar('\n');
-        else
-        {
-            if (shellBuffer[i].isCmd)
-                printColor(SHELL_MSG, SHELL_COLOR);
-            print(shellBuffer[i].line);
-            putChar('\n');
-        }
-    }
-    print(consoleMsg);
-    putChar('\n');
-
-    printColor(SHELL_MSG, SHELL_COLOR);
-    print(buffer);
-}
-
-void updateConsoleMsg(char *s)
-{
-    strcpy(consoleMsg, s);
-}
 
 
 
@@ -258,7 +218,7 @@ void loop(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
             sleep(numero);
         }
     }
-    else print("ERROR:No se inserto un numero");
+    else print("ERROR:No se inserto un numero\n");
     exit();
 }
 
@@ -274,14 +234,7 @@ void loadCommand(void *(*f)(void *), char *name, char *desc,int argAmount,int pr
 }
 
 
-void cleanBuffers()
-{
-    for (int i = 0; i < SHELLH; i++)
-        shellBuffer1[i].line[0] = 0;
-    for (int i = 0; i < SHELLH; i++)
-        shellBuffer2[i].line[0] = 0;
-    consoleMsg1[0] = consoleMsg2[0] = 0;
-}
+
 
 
 // retorna -1 si el buffer no tiene ningun comando valido
@@ -386,8 +339,6 @@ int theShell(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
     char choose[SHELL_BUFFER_SIZE] = {0};
     while(i==0){
         print("\n>>");
-        print(username);
-        print(":");
         scanf(choose);
         char args[ARG_AMOUNT][ARG_SIZE];
         int verify = cmdIndex(choose,args);
@@ -398,9 +349,7 @@ int theShell(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){
                     print("Cantidad de argumentos incorrectos");
                 }
                 print("Por favor vuelva a intentarlo \n");
-                print(">>");
-                print(username);
-                print(":");
+                print("\n>>");
                 scanf(choose);
                 verify = cmdIndex(choose,args);
         }
