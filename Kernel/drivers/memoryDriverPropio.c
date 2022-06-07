@@ -1,3 +1,5 @@
+#ifdef MEM_MANAGER_PROPIO
+
 #include "../include/lib.h"
 #include "../include/memoryDriver.h"
 #include "../include/videoD.h"
@@ -130,3 +132,5 @@ int copyAnswer(char* phrase, long memoryNum, char* buf) {
     c += numToStr(memoryNum, buf);
     return c;
 }
+
+#endif
