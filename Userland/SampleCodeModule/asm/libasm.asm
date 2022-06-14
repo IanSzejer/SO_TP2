@@ -60,6 +60,8 @@ GLOBAL my_yield
 GLOBAL exit
 
 GLOBAL waitProcess
+
+GLOBAL getSharedMemoryBlock
 %macro pushStateSysCall 0
 	push rbx
 	push rcx
@@ -253,3 +255,6 @@ my_yield:
     sysCall 29
 exit:
     sysCall 30
+
+getSharedMemoryBlock:
+    sysCall 31

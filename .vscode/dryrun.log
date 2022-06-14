@@ -1,4 +1,4 @@
-make --dry-run --keep-going --print-directory
+make --dry-run --always-make --keep-going --print-directory
 make: Entering directory '/home/ianlucklol3/SO_TP2'
 cd Bootloader; make all
 cd Kernel; make all

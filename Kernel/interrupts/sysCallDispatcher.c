@@ -10,6 +10,7 @@
 #include "pipeManager.h"
 #include "sem.h"
 #include "interrupts.h"
+#include "sharedMemory.h"
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
@@ -50,6 +51,7 @@ static int dup2(uint64_t oldFd, uint64_t newFd);
 static void myYield();
 static void exit();
 static void wait(uint64_t pid);
+static void* getSharedMemoryBlock(uint64_t id);
 
 static SysCallR sysCalls[255] = {(SysCallR)&read, (SysCallR)&write, (SysCallR)&clear, (SysCallR)&getCharSys, (SysCallR)&getTime,
                                  (SysCallR)&timerTick,
@@ -58,7 +60,7 @@ static SysCallR sysCalls[255] = {(SysCallR)&read, (SysCallR)&write, (SysCallR)&c
                                  (SysCallR)&changeState, (SysCallR)&changeProcesses, (SysCallR)&createSemaphore, (SysCallR)&openSemaphore,
                                  (SysCallR)&closeSemaphore, (SysCallR)&getSemaphores,
                                  (SysCallR)&waitSem, (SysCallR)&postSem, (SysCallR)&createPipe, (SysCallR)&openPipe,
-                                 (SysCallR)&getPipes,(SysCallR)&getPidSys,(SysCallR)&dup2, (SysCallR)&myYield, (SysCallR)&exit};
+                                 (SysCallR)&getPipes,(SysCallR)&getPidSys,(SysCallR)&dup2, (SysCallR)&myYield, (SysCallR)&exit,(SysCallR)&getSharedMemoryBlock};
 
 uint64_t sysCallDispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_t rax)
 {
@@ -321,4 +323,8 @@ static void exit(){
 
 static void wait(uint64_t pid){
     waitProcess(pid);
+}
+
+static void* getSharedMemoryBlock(uint64_t id){
+    return getSharedMemory(id);
 }

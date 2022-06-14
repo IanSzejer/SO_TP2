@@ -48,7 +48,7 @@ extern int get_all_processes();
 extern void my_yield();
 extern void exit();
 extern void waitProcess(uint64_t pid);
-
+extern void* getSharedMemoryBlock(uint64_t id);
 
 void print(char * string);
 int strlength(char * string);

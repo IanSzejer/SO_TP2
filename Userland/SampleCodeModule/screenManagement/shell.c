@@ -5,7 +5,7 @@
 #define SHELL_BUFFER_SIZE 128
 #define ARG_AMOUNT 6
 #define ARG_SIZE 21
-
+#define MEM_ID 1
 typedef struct
 {
     char line[SHELLW];
@@ -36,6 +36,8 @@ void callNice(int argc,char argv[ARG_AMOUNT][ARG_SIZE]);
 void changeState(int argc,char argv[ARG_AMOUNT][ARG_SIZE]);
 void getPipes(int argc,char argv[ARG_AMOUNT][ARG_SIZE]);
 void getAllProcesses(int argc,char argv[ARG_AMOUNT][ARG_SIZE]);
+void pSharedMemory();
+void rSharedMemory();
 
 static int cmdCounter = 0;
 int currentShell = 0;
@@ -151,6 +153,8 @@ void setupShellCommands()
     loadCommand((void *(*)(void*))&test_mm,"memtest","executes memory manager test",1,BACKGROUND);
     loadCommand((void *(*)(void*))&test_prio,"priotest","executes prio test",0,BACKGROUND);
     loadCommand((void *(*)(void*))&test_processes,"processtest","executes process test",1,BACKGROUND);
+    loadCommand((void *(*)(void*))&pSharedMemory,"pShared","gets a shared memory block anr writes in it",0,BACKGROUND);
+    loadCommand((void *(*)(void*))&rSharedMemory,"rShared","prints a shared memory block string in it",0,BACKGROUND);
 }
 
 
@@ -291,6 +295,19 @@ void sleep(int seconds)
     int finalTime = seconds + _secondsElapsed;
     while (secondsElapsed() <= finalTime)
         ;
+}
+
+void pSharedMemory(){
+    char* memPoint=(char*)getSharedMemoryBlock(MEM_ID);
+    char phrase[]="New shared memory\n";
+    strcpy(memPoint,phrase);
+    exit();
+}
+
+void rSharedMemory(){
+    char* memPoint=(char*)getSharedMemoryBlock(MEM_ID);
+    print(memPoint);
+    exit();
 }
 
 void memState(int argc,char argv[ARG_AMOUNT][ARG_SIZE]){   
